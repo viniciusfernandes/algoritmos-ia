@@ -1,18 +1,18 @@
 package br.com.inteligenciaartificial.algoritmos.neural;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class DigitsClassifier {
-    private Digit[][] batchs;
+    private TrainingBatch[] batchs;
     private double[] biases;
-    private final double[] inputs = new double[28 * 28];
+    private final double[] A_l = new double[15];
+    private final double[] Z_l = new double[Digit.PIXELS_PER_DIGIT];
     private final double[] neurons = new double[15];
+    private final double[][] outputErros = new double[1][15];
     private final double[] outputs = new double[10];
 
-    private Digit[] trainingData;
-    private double[] weights;
+    private final double[][] weights = new double[15][Digit.PIXELS_PER_DIGIT];
 
     // Neural network leanin rate
     private final double rate;
@@ -24,14 +24,14 @@ public class DigitsClassifier {
 
         // Initializing biases and weights with randomly to apply the stoschastic gradient
         // descent algorithm later.
-        initBiases(biases);
-        initWeights(weights);
+        initBiases();
+        initWeights();
     }
 
-    private void batching(final Digit[] data, final int batchSize) {
+    private void batching(final List<TrainingDigit> data, final int batchSize) {
 
-        final int rest = data.length % batchSize;
-        int batchNum = data.length - rest;
+        final int rest = data.size() % batchSize;
+        int batchNum = data.size() - rest;
         batchNum /= batchSize;
 
         int ibatch = 0;
@@ -45,14 +45,10 @@ public class DigitsClassifier {
             }
 
             for (int j = ibatch * batchSize; j < last; j++) {
-                batchs[ibatch][j] = trainingData[j];
+                batchs[ibatch].add(data.get(j));
             }
             ibatch++;
         }
-
-    }
-
-    private void calculatingInputs() {
 
     }
 
@@ -65,23 +61,23 @@ public class DigitsClassifier {
         return d;
     }
 
-    private void initBiases(final double[] biases) {
+    private void initBiases() {
         for (int i = 0; i < biases.length; i++) {
             biases[i] = Math.random();
         }
     }
 
-    private void initWeights(final double[] weights) {
+    private void initWeights() {
         for (int i = 0; i < weights.length; i++) {
-            weights[i] = Math.random();
+            for (int j = 0; j < weights[i].length; j++) {
+                weights[i][j] = Math.random();
+            }
         }
     }
 
-    public void learn(final TrainingDigit[] data) {
-
-        trainingData = data;
-        shuffleData(trainingData);
-        batching(trainingData, batchSize);
+    public void learn(final List<TrainingDigit> data) {
+        shuffleData(data);
+        batching(data, batchSize);
         updateWeightsAndBiases();
     }
 
@@ -89,18 +85,23 @@ public class DigitsClassifier {
         return new double[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     }
 
-    private void shuffleData(final Digit[] data) {
-        final List<Digit> list = new ArrayList<>(data.length);
-        Collections.shuffle(list);
-        for (int i = 0; i < list.size(); i++) {
-            data[i] = list.get(i);
-        }
+    private void shuffleData(final List<TrainingDigit> data) {
+        Collections.shuffle(data);
     }
 
     private void updateWeightsAndBiases() {
         final int m = batchs.length;
         for (int i = 0; i < batchs.length; i++) {
+            initInputs(batchs[i]);
+            feedForward();
+        }
+    }
 
+    private void initInputs(final TrainingBatch batch) {
+        for (final Digit digit : batch.digits) {
+            for (int i = 0; i < digit.pixels.length; i++) {
+                Z_l[i] = digit.pixels[i];
+            }
         }
     }
 
@@ -116,11 +117,18 @@ public class DigitsClassifier {
         return outs;
     }
 
-    private double[] feedForward(final double[] a) {
-        final double[] a_ = new double[a.length];
-        for (int i = 0; i < a.length; i++) {
-            a_[i] = a[i] * weights[i] + biases[i];
+    private void feedForward() {
+        for (int i = 1; i < A_l.length; i++) {
+            for (int j = 0; j < Z_l.length; j++) {
+                A_l[i] += Z_l[j] * weights[i][j];
+            }
+            A_l[i] += biases[i];
         }
-        return a_;
+    }
+
+    private void calcErrors() {}
+
+    private void calcErrors(final double[][] Zs) {
+
     }
 }
