@@ -4,15 +4,16 @@ import java.util.Collections;
 import java.util.List;
 
 public class DigitsClassifier {
+    private final int neuronsNumber = 15;
     private TrainingBatch[] batchs;
-    private double[] biases;
-    private final double[] A_l = new double[15];
-    private final double[] Z_l = new double[Digit.PIXELS_PER_DIGIT];
-    private final double[] neurons = new double[15];
-    private final double[][] outputErros = new double[1][15];
-    private final double[] outputs = new double[10];
+    private final double[][] B_ln = new double[][] {new double[neuronsNumber], new double[10]};
+    private final double[][] A_ln = new double[2][];
+    private final double[][] Z_ln = new double[2][];
+    private final double[][][] W_lnk = new double[][][] {new double[Digit.PIXELS_PER_DIGIT][neuronsNumber], new double[neuronsNumber][10]};
 
-    private final double[][] weights = new double[15][Digit.PIXELS_PER_DIGIT];
+    private final double[] neurons = new double[neuronsNumber];
+    private final double[][] outputErros = new double[1][neuronsNumber];
+    private final double[] outputs = new double[10];
 
     // Neural network leanin rate
     private final double rate;
@@ -54,7 +55,7 @@ public class DigitsClassifier {
 
     public int classify(final Digit digit) {
         int d = -1;
-        final double[] output = output();
+        final double[] output = outputs();
         for (int i = 0; i < output.length - 1; i++) {
             d = output[i] <= output[i + 1] ? i + 1 : i;
         }
@@ -62,15 +63,21 @@ public class DigitsClassifier {
     }
 
     private void initBiases() {
-        for (int i = 0; i < biases.length; i++) {
-            biases[i] = Math.random();
+
+        for (int i = 0; i < B_ln.length; i++) {
+            for (final int j = 0; j < B_ln[i].length; i++) {
+                B_ln[i][j] = Math.random();
+            }
+
         }
     }
 
     private void initWeights() {
-        for (int i = 0; i < weights.length; i++) {
-            for (int j = 0; j < weights[i].length; j++) {
-                weights[i][j] = Math.random();
+        for (int i = 0; i < W_lnk.length; i++) {
+            for (int j = 0; j < W_lnk[i].length; j++) {
+                for (final int k = 0; k < W_lnk[i][j].length; j++) {
+                    W_lnk[i][j][k] = Math.random();
+                }
             }
         }
     }
@@ -81,7 +88,11 @@ public class DigitsClassifier {
         updateWeightsAndBiases();
     }
 
-    private double[] output() {
+    private int classify() {
+        return 1;
+    }
+
+    private double[] outputs() {
         return new double[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     }
 
@@ -94,13 +105,14 @@ public class DigitsClassifier {
         for (int i = 0; i < batchs.length; i++) {
             initInputs(batchs[i]);
             feedForward();
+            outputs();
         }
     }
 
     private void initInputs(final TrainingBatch batch) {
         for (final Digit digit : batch.digits) {
             for (int i = 0; i < digit.pixels.length; i++) {
-                Z_l[i] = digit.pixels[i];
+                Z_ln[0][i] = digit.pixels[i];
             }
         }
     }
@@ -118,12 +130,19 @@ public class DigitsClassifier {
     }
 
     private void feedForward() {
-        for (int i = 1; i < A_l.length; i++) {
-            for (int j = 0; j < Z_l.length; j++) {
-                A_l[i] += Z_l[j] * weights[i][j];
+        final double tot = 0;
+        for (int l = 0; l < Z_ln.length; l++) {
+            for (int n = 0; n < Z_ln[l].length; n++) {
+                // tot += Z_ln[l][n] * W_lnk[l][n];
             }
-            A_l[i] += biases[i];
+
         }
+
+        for (int k = 0; k < Z_ln.length; k++) {
+            Z_ln[1][k] += Z_ln[0][k] * W_lnk[0][0][k];
+        }
+        // A_l[i] += biases[i];
+
     }
 
     private void calcErrors() {}
