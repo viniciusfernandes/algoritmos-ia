@@ -2,115 +2,131 @@ package br.com.inteligenciaartificial.algoritmos.math;
 
 public class Matrix {
 
-	private int colNum = -1;
-	private double[][] elements;
-	private int rowNum = -1;
+    private int colNum = -1;
+    private double[][] elements;
+    private int rowNum = -1;
 
-	public Matrix() {
-	}
+    public Matrix() {}
 
-	public Matrix(final double[]... rows) {
-		rowNum = rows.length;
-		colNum = rows[0].length;
-		elements = new double[rowNum][];
+    public Matrix(final double[]... rows) {
+        rowNum = rows.length;
+        colNum = rows[0].length;
+        elements = new double[rowNum][];
 
-		for (int i = 0; i < rowNum; i++) {
-			if (rows[i].length != colNum) {
-				throw new IllegalArgumentException("All rows must have the same length");
-			}
-			elements[i] = rows[i];
-		}
-	}
+        for (int i = 0; i < rowNum; i++) {
+            if (rows[i].length != colNum) {
+                throw new IllegalArgumentException("All rows must have the same length");
+            }
+            elements[i] = rows[i];
+        }
+    }
 
-	public Matrix(final int rowNum, final int colNum) {
-		elements = new double[rowNum][colNum];
-	}
+    public Matrix(final int rowNum, final int colNum) {
+        elements = new double[rowNum][colNum];
+    }
 
-	public Matrix add(final int rowIndex, final int colIndex, final double value) {
-		elements[rowIndex][colIndex] = value;
-		return this;
-	}
+    public Matrix add(final int rowIndex, final int colIndex, final double value) {
+        elements[rowIndex][colIndex] = value;
+        return this;
+    }
 
-	public Matrix addRow(final double[] row) {
-		if (rowNum < 0) {
-			rowNum = 1;
-			colNum = row.length;
-			elements = new double[1][];
-			elements[0] = row;
-			return this;
-		}
+    public Matrix addRow(final double[] row) {
+        if (rowNum < 0) {
+            rowNum = 1;
+            colNum = row.length;
+            elements = new double[1][];
+            elements[0] = row;
+            return this;
+        }
 
-		if (row.length != colNum) {
-			throw new IllegalArgumentException("All rows must have the same length");
-		} else {
-			rowNum++;
-			final double[][] copy = new double[rowNum][];
-			for (int r = 0; r < elements.length; r++) {
-				copy[r] = elements[r];
-			}
-			copy[rowNum - 1] = row;
-			elements = copy;
-		}
-		return this;
-	}
+        if (row.length != colNum) {
+            throw new IllegalArgumentException("All rows must have the same length");
+        } else {
+            rowNum++;
+            final double[][] copy = new double[rowNum][];
+            for (int r = 0; r < elements.length; r++) {
+                copy[r] = elements[r];
+            }
+            copy[rowNum - 1] = row;
+            elements = copy;
+        }
+        return this;
+    }
 
-	public double get(final int rowIndex, final int colIndex) {
-		return elements[rowIndex][colIndex];
-	}
+    public double get(final int rowIndex, final int colIndex) {
+        return elements[rowIndex][colIndex];
+    }
 
-	public int getColNum() {
-		return colNum;
-	}
+    public int getColNum() {
+        return colNum;
+    }
 
-	public int getRowNum() {
-		return rowNum;
-	}
+    @Override
+    public String toString() {
+        final StringBuilder m = new StringBuilder();
+        for (int r = 0; r < elements.length; r++) {
+            for (int c = 0; c < elements[r].length; c++) {
+                m.append(elements[r][c]).append(" ");
+            }
+            m.append("\n");
+        }
+        return m.toString();
+    }
 
-	public Matrix multiply(final Column col) {
-		if (colNum != col.getRowNum()) {
-			throw new UnsupportedOperationException("Operation is no defined");
-		}
+    public int getRowNum() {
+        return rowNum;
+    }
 
-		final Matrix m = new Matrix(rowNum, 1);
+    public Matrix multiply(final Matrix other) {
+        if (colNum != other.rowNum) {
+            throw new UnsupportedOperationException("Operation is no defined");
+        }
 
-		for (int r = 0; r < elements.length; r++) {
-			for (int c = 0; c < elements.length; c++) {
+        final Matrix m = new Matrix(rowNum, other.colNum);
+        double sum = 0;
+        for (int r = 0; r < elements.length; r++) {
+            for (int oCol = 0; oCol < other.colNum; oCol++) {
+                for (int oRow = 0; oRow < other.rowNum; oRow++) {
+                    sum += elements[r][oRow] * other.elements[oRow][oCol];
+                }
+                m.add(r, oCol, sum);
+                sum = 0;
+            }
 
-			}
-		}
-		return null;
-	}
+        }
+        return m;
+    }
 
-	public Matrix multiply(final Matrix matrix) {
-		if (colNum != matrix.rowNum) {
-			throw new UnsupportedOperationException("Operation is no defined");
-		}
+    public Matrix sum(final Matrix other) {
+        return sum(other, true);
+    }
 
-		final Matrix m = new Matrix(rowNum, matrix.colNum);
-		double sum = 0;
-		for (int r = 0; r < elements.length; r++) {
-			for (int c = 0; c < elements[r].length; c++) {
-				sum += elements[r][c] * matrix.elements[c][r];
-			}
+    public Matrix sub(final Matrix other) {
+        return sum(other, false);
+    }
 
-		}
-		return null;
-	}
+    private Matrix sum(final Matrix other, final boolean isPlus) {
+        if (rowNum != other.rowNum || colNum != other.colNum) {
+            throw new UnsupportedOperationException("Operation is no defined");
+        }
 
-	public Matrix multiply(final Row row) {
+        final Matrix m = new Matrix(rowNum, colNum);
+        for (int r = 0; r < rowNum; r++) {
+            for (int c = 0; c < colNum; c++) {
+                m.add(r, c, isPlus ? elements[r][c] + other.elements[r][c] : elements[r][c] - other.elements[r][c]);
+            }
+        }
+        return m;
+    }
 
-		return null;
-	}
+    public void print() {
+        System.out.println(toString());
+    }
 
-	public void print() {
-		final StringBuilder m = new StringBuilder();
-		for (int r = 0; r < elements.length; r++) {
-			for (int c = 0; c < elements[r].length; c++) {
-				m.append(elements[r][c]).append(" ");
-			}
-			m.append("\n");
-		}
-		System.out.println(m.toString());
-	}
+    public static void main(final String[] args) {
+        final Matrix m1 = new Matrix(new double[] {2, 3}, new double[] {4, 5});
+        final Matrix m2 = new Matrix(new double[] {1, 2}, new double[] {3, 2});
 
+        m1.multiply(m2).print();
+    }
 }
