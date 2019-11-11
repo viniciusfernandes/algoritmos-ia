@@ -1,5 +1,6 @@
 package br.com.inteligenciaartificial.algoritmos.neural;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,157 +10,148 @@ import br.com.inteligenciaartificial.algoritmos.math.MultiMatrix;
 import br.com.inteligenciaartificial.algoritmos.math.Row;
 
 public class DigitsClassifier {
-	private final static int HIDDEN_LAYER_SIZE = 15;
-	private final static int OUTPUT_LAYER_SIZE = 10;
-	private final Matrix A_ln = new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE);
-	private final Matrix B_ln = new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE);
-	private Row batchs;
-	private final int batchSize;
-	private final Matrix Error_ln = new Matrix(Digit.PIXELS_PER_DIGIT, HIDDEN_LAYER_SIZE);
+    private final static int HIDDEN_LAYER_SIZE = 15;
+    private static final int INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
+    private final static int LAYERS = 3;
+    private final static int OUTPUT_LAYER_SIZE = 10;
+    private final MultiMatrix A = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), new Column(OUTPUT_LAYER_SIZE));
+    private final MultiMatrix B = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), new Column(OUTPUT_LAYER_SIZE));
 
-	private final Column neurons = new Column(HIDDEN_LAYER_SIZE);
-	private final Column outputs = new Column(OUTPUT_LAYER_SIZE);
-	// Neural network leanin rate
-	private final double rate;
+    private TrainingDigit[][] batchs;
 
-	private final MultiMatrix W_lnk = new MultiMatrix(Digit.PIXELS_PER_DIGIT, HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE);
-	private final double[][] Z_ln = new double[2][];
+    private final int batchSize;
+    private final MultiMatrix Error = new MultiMatrix(LAYERS);
 
-	public DigitsClassifier(final double learningRate, final int batchSize) {
-		rate = learningRate;
-		this.batchSize = batchSize;
+    private final Column neurons = new Column(HIDDEN_LAYER_SIZE);
+    private final Column outputs = new Column(OUTPUT_LAYER_SIZE);
+    // Neural network leanin rate
+    private final double rate;
 
-		// Initializing biases and weights with randomly to apply the stoschastic
-		// gradient
-		// descent algorithm later.
-		initBiases();
-		initWeights();
-	}
+    private final MultiMatrix W = new MultiMatrix(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE),
+                    new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE), null);
+    // Setup the transpose matrix of Z
+    private final MultiMatrix Z = new MultiMatrix(new Row(INPUT_LAYER_SIZE), new Row(HIDDEN_LAYER_SIZE), null);
 
-	private void batching(final List<TrainingDigit> data, final int batchSize) {
+    public DigitsClassifier(final double learningRate, final int batchSize) {
+        rate = learningRate;
+        this.batchSize = batchSize;
 
-		final int rest = data.size() % batchSize;
-		int batchNum = data.size() - rest;
-		batchNum /= batchSize;
+        // Initializing biases and weights with randomly to apply the stoschastic
+        // gradient
+        // descent algorithm later.
+        initBiases();
+        initWeights();
+    }
 
-		int ibatch = 0;
-		int last = 0;
-		while (ibatch <= batchNum) {
+    private void initBatchs(final List<TrainingDigit> data, int amountBatchs) {
 
-			if (rest != 0 && ibatch == batchNum) {
-				last = rest;
-			} else {
-				last = batchSize;
-			}
+        final int rest = data.size() % amountBatchs;
+        int batchSize = (data.size() - rest) / amountBatchs;
+        if (batchSize == 0) {
+            amountBatchs = 1;
+            batchSize = data.size();
+        }
 
-			for (int j = ibatch * batchSize; j < last; j++) {
-				batchs[ibatch].add(data.get(j));
-			}
-			ibatch++;
-		}
+        batchs = new TrainingDigit[amountBatchs][batchSize];
+        int begin = 0;
+        int end = 0;
 
-	}
+        for (int b = 0; b < amountBatchs; b++) {
+            begin = b * batchSize;
+            end = begin + batchSize;
 
-	private void calcErrors(final List<TrainingDigit> digits) {
-		final int L = Error_ln.length - 1;
-		for (final TrainingDigit d : digits) {
-			for (int l = L; l > 0; l--) {
-				for (int n = 0; n < Error_ln[l].length; n++) {
-					if (l == L) {
-						Error_ln[l][n] = Math.abs(d.expectedOutput - Z_ln[L][n]) * sigmoidDifferential(Z_ln[L][n]);
-					}
-				}
-			}
-		}
-	}
+            for (int i = begin; i < end; i++) {
+                batchs[b][i] = data.get(i);
+            }
+        }
 
-	private int classify() {
-		return 1;
-	}
+    }
 
-	public int classify(final Digit digit) {
-		int d = -1;
-		final double[] output = outputs();
-		for (int i = 0; i < output.length - 1; i++) {
-			d = output[i] <= output[i + 1] ? i + 1 : i;
-		}
-		return d;
-	}
+    private void calcErrors() {
 
-	private void feedForward() {
-		for (int l = 0; l < Z_ln.length - 1; l++) {
-			for (int n = 0; n < W_lnk[l].length; n++) {
-				for (int k = 0; k < W_lnk[l][n].length; k++) {
-					Z_ln[l + 1][n] += Z_ln[l][k] * W_lnk[l][n][k];
-				}
-				Z_ln[l + 1][n] += Z_ln[l + 1][n] + B_ln[l][n];
+    }
 
-				if (l == 0) {
-					A_ln[l][n] = Z_ln[l + 1][n];
-				} else {
-					A_ln[l + 1][n] = sigmoid(Z_ln[l + 1][n]);
-				}
-			}
-		}
-	}
+    private int classify() {
+        return 1;
+    }
 
-	private void initBiases() {
-		for (int i = 0; i < B_ln.getRowNum(); i++) {
-			for (final int j = 0; j < B_ln.getColNum(); i++) {
-				B_ln.add(i, j, Math.random());
-			}
+    public int classify(final Digit digit) {
+        int d = -1;
+        final double[] output = outputs();
+        for (int i = 0; i < output.length - 1; i++) {
+            d = output[i] <= output[i + 1] ? i + 1 : i;
+        }
+        return d;
+    }
 
-		}
-	}
+    private void feedForward() {
 
-	private void initInputs(final TrainingBatch batch) {
-		for (final Digit digit : batch.digits) {
-			for (int i = 0; i < digit.pixels.length; i++) {
-				Z_ln[0][i] = digit.pixels[i];
-			}
-		}
-	}
+        Matrix Z_1 = null;
+        final int layer = LAYERS - 1;
+        for (int l = 0; l < layer; l++) {
+            Z_1 = Z.get(l).transpose().multiply(W.get(l));
 
-	private void initWeights() {
-		for (int i = 0; i < W_lnk.length; i++) {
-			for (int j = 0; j < W_lnk[i].length; j++) {
-				for (final int k = 0; k < W_lnk[i][j].length; j++) {
-					W_lnk[i][j][k] = Math.random();
-				}
-			}
-		}
-	}
+            W.set(l + 1, Z_1);
+            A.set(l + 1, Z_1.apply(val -> sigmoid(val)));
+        }
+    }
 
-	public void learn(final List<TrainingDigit> data) {
-		shuffleData(data);
-		batching(data, batchSize);
-		// updateWeightsAndBiases();
-	}
+    private void initBiases() {
+        B.initRandom();
+    }
 
-	private double[] outputs() {
-		return new double[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-	}
+    private void initInputs(final Digit digit) {
+        final double[] pixels = new double[INPUT_LAYER_SIZE];
+        for (int i = 0; i < digit.pixels.length; i++) {
+            pixels[i] = digit.pixels[i];
+        }
+        Z.set(0, new Column(pixels));
+    }
 
-	private void shuffleData(final List<TrainingDigit> data) {
-		Collections.shuffle(data);
-	}
+    private void initWeights() {
+        W.initRandom();
+    }
 
-	private double sigmoid(final double z) {
-		return 1d / (1d + Math.pow(Math.E, -z));
-	}
+    public void learn(final List<TrainingDigit> data) {
+        shuffleData(data);
+        initBatchs(data, batchSize);
+        updateWeightsAndBiases();
+    }
 
-	private double sigmoidDifferential(final double z) {
-		final double sig = sigmoid(z);
-		// Essa eh a expressao algebrica da derivada da funcao sigmoid.
-		return sig * (1 - sig);
-	}
+    private double[] outputs() {
+        return new double[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    }
 
-	private void updateWeightsAndBiases(final List<TrainingDigit> data) {
-		final int m = batchs.length;
-		for (int i = 0; i < batchs.length; i++) {
-			initInputs(batchs[i]);
-			feedForward();
-			calcErrors(data);
-		}
-	}
+    private void shuffleData(final List<TrainingDigit> data) {
+        Collections.shuffle(data);
+    }
+
+    private double sigmoid(final double z) {
+        return 1d / (1d + Math.pow(Math.E, -z));
+    }
+
+    private double sigmoidDifferential(final double z) {
+        final double sig = sigmoid(z);
+        // Essa eh a expressao algebrica da derivada da funcao sigmoid.
+        return sig * (1 - sig);
+    }
+
+    private void updateWeightsAndBiases() {
+        for (int i = 0; i < batchs.length; i++) {
+            for (int j = 0; j < batchs[i].length; j++) {
+                initInputs(batchs[i][j]);
+            }
+            feedForward();
+            calcErrors();
+        }
+    }
+
+    public static void main(final String[] args) {
+        final TrainingDigit digit = new TrainingDigit(new int[INPUT_LAYER_SIZE], 1);
+        final List<TrainingDigit> dataTraining = new ArrayList<>();
+        dataTraining.add(digit);
+
+        final DigitsClassifier classifier = new DigitsClassifier(0.001, 2);
+        classifier.learn(dataTraining);
+    }
 }
