@@ -1,7 +1,7 @@
 package br.com.inteligenciaartificial.algoritmos.neural;
 
 public class Digit {
-    public final static int PIXELS_PER_DIGIT = 28 * 28;
+    public final static int PIXELS_PER_DIGIT = 2 * 2;
     public int[] pixels;
 
     public Digit(final int[] pixels) {

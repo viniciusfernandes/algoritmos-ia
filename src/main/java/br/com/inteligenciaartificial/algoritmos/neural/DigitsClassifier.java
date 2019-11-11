@@ -10,7 +10,7 @@ import br.com.inteligenciaartificial.algoritmos.math.MultiMatrix;
 import br.com.inteligenciaartificial.algoritmos.math.Row;
 
 public class DigitsClassifier {
-    private final static int HIDDEN_LAYER_SIZE = 15;
+    private final static int HIDDEN_LAYER_SIZE = 3;
     private static final int INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
     private final static int LAYERS = 3;
     private final static int OUTPUT_LAYER_SIZE = 10;

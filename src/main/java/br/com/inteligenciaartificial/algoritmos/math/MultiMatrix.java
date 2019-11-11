@@ -1,7 +1,5 @@
 package br.com.inteligenciaartificial.algoritmos.math;
 
-import java.util.Arrays;
-
 public class MultiMatrix {
     private Matrix[] elements;
 
@@ -47,7 +45,7 @@ public class MultiMatrix {
 
     public Matrix get(final int index) {
         return elements[index];
-        
+
     }
 
     public MultiMatrix initRandom() {
@@ -62,6 +60,10 @@ public class MultiMatrix {
 
     @Override
     public String toString() {
-        return Arrays.deepToString(elements);
+        final StringBuilder s = new StringBuilder();
+        for (int i = 0; i < elements.length; i++) {
+            s.append("Indice ").append(i).append(": ").append(elements[i]).append("\n");
+        }
+        return s.toString();
     }
 }
