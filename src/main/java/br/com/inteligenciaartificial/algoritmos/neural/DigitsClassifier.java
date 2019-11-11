@@ -3,23 +3,26 @@ package br.com.inteligenciaartificial.algoritmos.neural;
 import java.util.Collections;
 import java.util.List;
 
+import br.com.inteligenciaartificial.algoritmos.math.Column;
+import br.com.inteligenciaartificial.algoritmos.math.Matrix;
+import br.com.inteligenciaartificial.algoritmos.math.MultiMatrix;
+import br.com.inteligenciaartificial.algoritmos.math.Row;
+
 public class DigitsClassifier {
 	private final static int HIDDEN_LAYER_SIZE = 15;
 	private final static int OUTPUT_LAYER_SIZE = 10;
-	private final double[][] A_ln = new double[][] { new double[HIDDEN_LAYER_SIZE], new double[OUTPUT_LAYER_SIZE] };
-	private final double[][] B_ln = new double[][] { new double[HIDDEN_LAYER_SIZE], new double[OUTPUT_LAYER_SIZE] };
-	private TrainingBatch[] batchs;
+	private final Matrix A_ln = new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE);
+	private final Matrix B_ln = new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE);
+	private Row batchs;
 	private final int batchSize;
-	private final double[][] Error_ln = new double[][] { new double[Digit.PIXELS_PER_DIGIT],
-			new double[HIDDEN_LAYER_SIZE] };
+	private final Matrix Error_ln = new Matrix(Digit.PIXELS_PER_DIGIT, HIDDEN_LAYER_SIZE);
 
-	private final double[] neurons = new double[HIDDEN_LAYER_SIZE];
-	private final double[] outputs = new double[OUTPUT_LAYER_SIZE];
+	private final Column neurons = new Column(HIDDEN_LAYER_SIZE);
+	private final Column outputs = new Column(OUTPUT_LAYER_SIZE);
 	// Neural network leanin rate
 	private final double rate;
 
-	private final double[][][] W_lnk = new double[][][] { new double[Digit.PIXELS_PER_DIGIT][HIDDEN_LAYER_SIZE],
-			new double[HIDDEN_LAYER_SIZE][OUTPUT_LAYER_SIZE] };
+	private final MultiMatrix W_lnk = new MultiMatrix(Digit.PIXELS_PER_DIGIT, HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE);
 	private final double[][] Z_ln = new double[2][];
 
 	public DigitsClassifier(final double learningRate, final int batchSize) {
@@ -101,10 +104,9 @@ public class DigitsClassifier {
 	}
 
 	private void initBiases() {
-
-		for (int i = 0; i < B_ln.length; i++) {
-			for (final int j = 0; j < B_ln[i].length; i++) {
-				B_ln[i][j] = Math.random();
+		for (int i = 0; i < B_ln.getRowNum(); i++) {
+			for (final int j = 0; j < B_ln.getColNum(); i++) {
+				B_ln.add(i, j, Math.random());
 			}
 
 		}
