@@ -1,5 +1,7 @@
 package br.com.inteligenciaartificial.algoritmos.math;
 
+import java.util.function.DoubleConsumer;
+
 public class MultiMatrix {
     private Matrix[] elements;
 
@@ -17,6 +19,10 @@ public class MultiMatrix {
 
     public Matrix multiply(final int index, final Matrix other) {
         return elements[index].multiply(other);
+    }
+
+    public Matrix apply(final int index, final DoubleConsumer operation) {
+        return elements[index].apply(operation);
     }
 
     public int size() {

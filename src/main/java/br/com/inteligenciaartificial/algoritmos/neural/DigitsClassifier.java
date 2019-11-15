@@ -10,16 +10,16 @@ import br.com.inteligenciaartificial.algoritmos.math.MultiMatrix;
 import br.com.inteligenciaartificial.algoritmos.math.Row;
 
 public class DigitsClassifier {
-    private final static int HIDDEN_LAYER_SIZE = 3;
+    private static final int HIDDEN_LAYER_SIZE = 3;
     private static final int INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
-    private final static int LAYERS = 3;
-    private final static int OUTPUT_LAYER_SIZE = 10;
+    private static final int LAYERS = 3;
+    private static final int OUTPUT_LAYER_SIZE = 10;
     private final MultiMatrix A = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), new Column(OUTPUT_LAYER_SIZE));
     private final MultiMatrix B = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), new Column(OUTPUT_LAYER_SIZE));
 
     private TrainingDigit[][] batchs;
 
-    private final int batchSize;
+    private int batchSize;
     private final MultiMatrix Error = new MultiMatrix(LAYERS);
 
     private final Column neurons = new Column(HIDDEN_LAYER_SIZE);
@@ -46,7 +46,7 @@ public class DigitsClassifier {
     private void initBatchs(final List<TrainingDigit> data, int amountBatchs) {
 
         final int rest = data.size() % amountBatchs;
-        int batchSize = (data.size() - rest) / amountBatchs;
+        batchSize = (data.size() - rest) / amountBatchs;
         if (batchSize == 0) {
             amountBatchs = 1;
             batchSize = data.size();
@@ -67,8 +67,23 @@ public class DigitsClassifier {
 
     }
 
-    private void calcErrors() {
+    private void calcOutputErrors() {
+        backPropagation(LAYERS, Error.get(LAYERS - 1));
+    }
 
+    private Matrix zDerivative = null;
+    private Matrix wTranspose = null;
+    private Matrix previousError = null;
+
+    private void backPropagation(final int layer, final Matrix error) {
+        if (layer <= 1) {
+            return;
+        }
+        zDerivative = Z.apply(layer, this::sigmoidDifferential);
+        wTranspose = W.get(layer).transpose();
+
+        previousError = wTranspose.multiply(error).dot(zDerivative);
+        backPropagation(layer - 1, previousError);
     }
 
     private int classify() {
@@ -86,13 +101,13 @@ public class DigitsClassifier {
 
     private void feedForward() {
 
-        Matrix Z_1 = null;
+        Matrix Z1 = null;
         final int layer = LAYERS - 1;
         for (int l = 0; l < layer; l++) {
-            Z_1 = Z.get(l).transpose().multiply(W.get(l));
+            Z1 = Z.get(l).transpose().multiply(W.get(l));
 
-            W.set(l + 1, Z_1);
-            A.set(l + 1, Z_1.apply(val -> sigmoid(val)));
+            W.set(l + 1, Z1);
+            A.set(l + 1, Z1.apply(this::sigmoid));
         }
     }
 
@@ -142,7 +157,7 @@ public class DigitsClassifier {
                 initInputs(batchs[i][j]);
             }
             feedForward();
-            calcErrors();
+            calcOutputErrors();
         }
     }
 

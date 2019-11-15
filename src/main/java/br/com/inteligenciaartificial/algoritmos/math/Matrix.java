@@ -1,6 +1,6 @@
 package br.com.inteligenciaartificial.algoritmos.math;
 
-import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 public class Matrix {
 
@@ -145,7 +145,7 @@ public class Matrix {
 
     }
 
-    public Matrix apply(final Consumer<Double> operation) {
+    public Matrix apply(final DoubleConsumer operation) {
         final double[][] result = new double[rowNum][colNum];
 
         for (int r = 0; r < elements.length; r++) {
@@ -170,5 +170,23 @@ public class Matrix {
         }
 
         return new Matrix(copy);
+    }
+
+    public Matrix dot(final Matrix other) {
+        if (other == null) {
+            return null;
+        }
+        if (rowNum != other.rowNum || colNum != other.colNum) {
+            throw new IllegalArgumentException(String.format(
+                            "You tried operate a matrix %s and another matrix %s, but both must have the same rom and column numbers",
+                            order(), other.order()));
+        }
+        final Matrix m = new Matrix(rowNum, colNum);
+        for (int r = 0; r < elements.length; r++) {
+            for (int c = 0; c < elements[r].length; c++) {
+                m.set(r, c, elements[r][c] * other.elements[r][c]);
+            }
+        }
+        return m;
     }
 }
