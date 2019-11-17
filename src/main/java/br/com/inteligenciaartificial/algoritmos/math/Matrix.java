@@ -61,16 +61,15 @@ public class Matrix {
 		return this;
 	}
 
-	public Matrix apply(final DoubleConsumer operation) {
-		final double[][] result = new double[rowNum][colNum];
-
-		for (int r = 0; r < elements.length; r++) {
-			for (int c = 0; c < elements[r].length; c++) {
-				result[r][c] = elements[r][c];
-				operation.accept(result[r][c]);
+	public Matrix copy() {
+		final double[][] copy = new double[rowNum][colNum];
+		for (int r = 0; r < rowNum; r++) {
+			for (int c = 0; c < colNum; c++) {
+				copy[r][c] = elements[r][c];
 			}
 		}
-		return this;
+
+		return new Matrix(copy);
 	}
 
 	public Matrix dot(final Matrix other) {
@@ -114,7 +113,7 @@ public class Matrix {
 	}
 
 	public Matrix module() {
-		return apply(z -> Math.abs(z));
+		return operate(z -> Math.abs(z));
 	}
 
 	public Matrix multiply(final Matrix other) {
@@ -136,6 +135,18 @@ public class Matrix {
 
 		}
 		return m;
+	}
+
+	public Matrix operate(final DoubleConsumer operation) {
+		final double[][] result = new double[rowNum][colNum];
+
+		for (int r = 0; r < elements.length; r++) {
+			for (int c = 0; c < elements[r].length; c++) {
+				result[r][c] = elements[r][c];
+				operation.accept(result[r][c]);
+			}
+		}
+		return this;
 	}
 
 	public String order() {

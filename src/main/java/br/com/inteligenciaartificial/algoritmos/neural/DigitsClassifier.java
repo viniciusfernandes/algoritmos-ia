@@ -10,10 +10,22 @@ import br.com.inteligenciaartificial.algoritmos.math.MultiMatrix;
 import br.com.inteligenciaartificial.algoritmos.math.Row;
 
 public class DigitsClassifier {
-	private static final int HIDDEN_LAYER_SIZE = 3;
-	private static final int INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
-	private static final int LAYERS = 3;
-	private static final int OUTPUT_LAYER_SIZE = 4;
+	private static final int HIDDEN_LAYER_INDEX;
+	private static final int HIDDEN_LAYER_SIZE;
+	private static final int INPUT_LAYER_INDEX;
+	private static final int INPUT_LAYER_SIZE;
+	private static final int NUM_LAYERS;
+	private static final int OUTPUT_LAYER_SIZE;
+	private static final int OUTUPUT_LAYER_INDEX;
+	static {
+		INPUT_LAYER_INDEX = 0;
+		INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
+		NUM_LAYERS = 3;
+		HIDDEN_LAYER_SIZE = 3;
+		OUTPUT_LAYER_SIZE = 4;
+		HIDDEN_LAYER_INDEX = 1;
+		OUTUPUT_LAYER_INDEX = NUM_LAYERS - 1;
+	}
 
 	public static void main(final String[] args) {
 
@@ -34,19 +46,20 @@ public class DigitsClassifier {
 
 	}
 
-	private final MultiMatrix A = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), null);
+	private MultiMatrix A;
 	private final MultiMatrix B = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), new Column(OUTPUT_LAYER_SIZE));
 
 	private TrainingDigit[][] batchs;
 	private int batchSize;
 
-	private final MultiMatrix Error = new MultiMatrix(LAYERS);
-	private final Column neurons = new Column(HIDDEN_LAYER_SIZE);
+	private final MultiMatrix Error = new MultiMatrix(OUTUPUT_LAYER_INDEX);
 	private final Column outputs = new Column(OUTPUT_LAYER_SIZE);
 
 	private Matrix previousError = null;
 	// Neural network leanin rate
 	private final double rate;
+
+	private Matrix sigmoidDerivative = null;
 
 	private final MultiMatrix W = new MultiMatrix(null, new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE),
 			new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE));
@@ -55,8 +68,6 @@ public class DigitsClassifier {
 
 	// Setup the transpose matrix of Z
 	private final MultiMatrix Z = new MultiMatrix(new Row(INPUT_LAYER_SIZE), new Row(HIDDEN_LAYER_SIZE), null);
-
-	private Matrix zDerivative = null;
 
 	public DigitsClassifier(final double learningRate, final int batchSize) {
 		rate = learningRate;
@@ -70,28 +81,24 @@ public class DigitsClassifier {
 	}
 
 	private void backPropagation(final int layer, final Matrix error) {
-		if (layer <= 1) {
+		if (layer <= INPUT_LAYER_INDEX) {
 			return;
 		}
-		zDerivative = Z.apply(layer, this::sigmoidDifferential);
+		sigmoidDerivative = Z.operate(layer, this::sigmoidDifferential);
 		wTranspose = W.get(layer).transpose();
 
-		previousError = wTranspose.multiply(error).dot(zDerivative);
+		previousError = wTranspose.multiply(error).dot(sigmoidDerivative);
 		backPropagation(layer - 1, previousError);
 	}
 
 	private void calcOutputErrors(final Column expectedVal) {
-		final Matrix A_ = A.get(LAYERS - 1);
-		zDerivative = Z.apply(LAYERS - 2, this::sigmoidDifferential);
+		sigmoidDerivative = Z.copy(HIDDEN_LAYER_INDEX);
+		sigmoidDerivative.operate(this::sigmoidDifferential);
 
-		final Matrix gradC = A_.sub(expectedVal).module();
-		final Matrix error = gradC.dot(zDerivative);
+		final Matrix gradC = A.get(OUTUPUT_LAYER_INDEX).sub(expectedVal).module();
+		final Matrix error = gradC.dot(sigmoidDerivative);
 
-		backPropagation(LAYERS - 1, error);
-	}
-
-	private int classify() {
-		return 1;
+		backPropagation(OUTUPUT_LAYER_INDEX - 1, error);
 	}
 
 	public int classify(final Digit digit) {
@@ -104,20 +111,22 @@ public class DigitsClassifier {
 	}
 
 	private void feedForward() {
-		feedForward(1, Z.get(0));
+		A = new MultiMatrix(NUM_LAYERS);
+		feedForward(HIDDEN_LAYER_INDEX, Z.get(0), Z.get(0));
 	}
 
-	private void feedForward(final int layer, Matrix Z1) {
-		if (layer >= LAYERS) {
+	private void feedForward(final int layer, Matrix Z1, Matrix A1) {
+		if (layer >= OUTUPUT_LAYER_INDEX) {
 			return;
 		}
 
 		Z1 = W.get(layer).transpose().multiply(Z1).sum(B.get(layer));
-		if (layer > 1) {
-			Z1.apply(this::sigmoid);
-		}
+		A1 = A1.copy().operate(this::sigmoid);
+
 		Z.set(layer, Z1);
-		feedForward(layer + 1, Z1);
+		A.set(layer + 1, A1);
+
+		feedForward(layer + 1, Z1, A1);
 	}
 
 	private void initBatchs(final List<TrainingDigit> data, int amountBatchs) {

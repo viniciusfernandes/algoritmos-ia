@@ -27,8 +27,24 @@ public class MultiMatrix {
 		return this;
 	}
 
-	public Matrix apply(final int index, final DoubleConsumer operation) {
-		return elements[index].apply(operation);
+	public Matrix operate(final int index, final DoubleConsumer operation) {
+		return elements[index].operate(operation);
+	}
+
+	public MultiMatrix copy() {
+		final MultiMatrix m = new MultiMatrix(elements.length);
+		for (int i = 0; i < elements.length; i++) {
+			m.set(i, elements[i].copy());
+		}
+		return m;
+	}
+
+	public Matrix copy(final int index) {
+		final Matrix m = get(index);
+		if (m == null) {
+			return m;
+		}
+		return m.copy();
 	}
 
 	public Matrix get(final int index) {
