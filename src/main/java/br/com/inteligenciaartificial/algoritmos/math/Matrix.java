@@ -4,189 +4,215 @@ import java.util.function.DoubleConsumer;
 
 public class Matrix {
 
-    public static void main(final String[] args) {
-        final Matrix m1 = new Matrix(new double[] {2, 3}, new double[] {4, 5});
-        final Matrix m2 = new Matrix(new double[] {1, 2}, new double[] {3, 2});
+	public static void main(final String[] args) {
+		final Matrix m1 = new Matrix(new double[] { 2, 3 }, new double[] { 4, 5 });
+		final Matrix m2 = new Matrix(new double[] { 1, 2 }, new double[] { 3, 2 });
 
-        m1.multiply(m2).print();
-    }
+		m1.multiply(m2).print();
+	}
 
-    private int colNum = -1;
-    private double[][] elements;
+	private int colNum = -1;
+	private double[][] elements;
 
-    private int rowNum = -1;
+	private int rowNum = -1;
 
-    public Matrix() {}
+	public Matrix() {
+	}
 
-    public Matrix(final double[]... rows) {
-        rowNum = rows.length;
-        colNum = rows[0].length;
-        elements = new double[rowNum][];
+	public Matrix(final double[]... rows) {
+		rowNum = rows.length;
+		colNum = rows[0].length;
+		elements = new double[rowNum][];
 
-        for (int i = 0; i < rowNum; i++) {
-            if (rows[i].length != colNum) {
-                throw new IllegalArgumentException("All rows must have the same length");
-            }
-            elements[i] = rows[i];
-        }
-    }
+		for (int i = 0; i < rowNum; i++) {
+			if (rows[i].length != colNum) {
+				throw new IllegalArgumentException("All rows must have the same length");
+			}
+			elements[i] = rows[i];
+		}
+	}
 
-    public Matrix(final int rowNum, final int colNum) {
-        elements = new double[rowNum][colNum];
-        this.rowNum = rowNum;
-        this.colNum = colNum;
-    }
+	public Matrix(final int rowNum, final int colNum) {
+		elements = new double[rowNum][colNum];
+		this.rowNum = rowNum;
+		this.colNum = colNum;
+	}
 
-    public Matrix set(final int rowIndex, final int colIndex, final double value) {
-        elements[rowIndex][colIndex] = value;
-        return this;
-    }
+	Matrix addRow(final double[] row) {
+		if (rowNum < 0) {
+			rowNum = 1;
+			colNum = row.length;
+			elements = new double[1][];
+			elements[0] = row;
+			return this;
+		}
 
-    Matrix addRow(final double[] row) {
-        if (rowNum < 0) {
-            rowNum = 1;
-            colNum = row.length;
-            elements = new double[1][];
-            elements[0] = row;
-            return this;
-        }
+		if (row.length != colNum) {
+			throw new IllegalArgumentException("All rows must have the same length");
+		} else {
+			rowNum++;
+			final double[][] copy = new double[rowNum][];
+			for (int r = 0; r < elements.length; r++) {
+				copy[r] = elements[r];
+			}
+			copy[rowNum - 1] = row;
+			elements = copy;
+		}
+		return this;
+	}
 
-        if (row.length != colNum) {
-            throw new IllegalArgumentException("All rows must have the same length");
-        } else {
-            rowNum++;
-            final double[][] copy = new double[rowNum][];
-            for (int r = 0; r < elements.length; r++) {
-                copy[r] = elements[r];
-            }
-            copy[rowNum - 1] = row;
-            elements = copy;
-        }
-        return this;
-    }
+	public Matrix apply(final DoubleConsumer operation) {
+		final double[][] result = new double[rowNum][colNum];
 
-    public double get(final int rowIndex, final int colIndex) {
-        return elements[rowIndex][colIndex];
-    }
+		for (int r = 0; r < elements.length; r++) {
+			for (int c = 0; c < elements[r].length; c++) {
+				result[r][c] = elements[r][c];
+				operation.accept(result[r][c]);
+			}
+		}
+		return this;
+	}
 
-    public int getColNum() {
-        return colNum;
-    }
+	public Matrix dot(final Matrix other) {
+		if (other == null) {
+			return null;
+		}
+		if (rowNum != other.rowNum || colNum != other.colNum) {
+			throw new IllegalArgumentException(String.format(
+					"You tried operate a matrix %s and another matrix %s, but both must have the same rom and column numbers",
+					order(), other.order()));
+		}
+		final Matrix m = new Matrix(rowNum, colNum);
+		for (int r = 0; r < elements.length; r++) {
+			for (int c = 0; c < elements[r].length; c++) {
+				m.set(r, c, elements[r][c] * other.elements[r][c]);
+			}
+		}
+		return m;
+	}
 
-    public int getRowNum() {
-        return rowNum;
-    }
+	public double get(final int rowIndex, final int colIndex) {
+		return elements[rowIndex][colIndex];
+	}
 
-    public Matrix multiply(final Matrix other) {
-        if (colNum != other.rowNum) {
-            throw new UnsupportedOperationException("Operation is not defined. Matriz: " + order() + " and Matrix: " + other.order());
-        }
+	public int getColNum() {
+		return colNum;
+	}
 
-        final Matrix m = new Matrix(rowNum, other.colNum);
-        double sum = 0;
-        for (int r = 0; r < elements.length; r++) {
-            for (int oCol = 0; oCol < other.colNum; oCol++) {
-                for (int oRow = 0; oRow < other.rowNum; oRow++) {
-                    sum += elements[r][oRow] * other.elements[oRow][oCol];
-                }
-                m.set(r, oCol, sum);
-                sum = 0;
-            }
+	public int getRowNum() {
+		return rowNum;
+	}
 
-        }
-        return m;
-    }
+	public Matrix initRandom() {
+		for (int r = 0; r < rowNum; r++) {
+			for (int c = 0; c < colNum; c++) {
+				elements[r][c] = Math.random();
+			}
+		}
+		return this;
 
-    public void print() {
-        System.out.println(toString());
-    }
+	}
 
-    public Matrix sub(final Matrix other) {
-        return sum(other, false);
-    }
+	public Matrix module() {
+		return apply(z -> Math.abs(z));
+	}
 
-    public Matrix sum(final Matrix other) {
-        return sum(other, true);
-    }
+	public Matrix multiply(final Matrix other) {
+		if (colNum != other.rowNum) {
+			throw new UnsupportedOperationException(
+					"Operation is not defined. Matriz: " + order() + " and Matrix: " + other.order());
+		}
 
-    private Matrix sum(final Matrix other, final boolean isPlus) {
-        if (rowNum != other.rowNum || colNum != other.colNum) {
-            throw new UnsupportedOperationException("Operation is no defined");
-        }
+		final Matrix m = new Matrix(rowNum, other.colNum);
+		double sum = 0;
+		for (int r = 0; r < elements.length; r++) {
+			for (int oCol = 0; oCol < other.colNum; oCol++) {
+				for (int oRow = 0; oRow < other.rowNum; oRow++) {
+					sum += elements[r][oRow] * other.elements[oRow][oCol];
+				}
+				m.set(r, oCol, sum);
+				sum = 0;
+			}
 
-        final Matrix m = new Matrix(rowNum, colNum);
-        for (int r = 0; r < rowNum; r++) {
-            for (int c = 0; c < colNum; c++) {
-                m.set(r, c, isPlus ? elements[r][c] + other.elements[r][c] : elements[r][c] - other.elements[r][c]);
-            }
-        }
-        return m;
-    }
+		}
+		return m;
+	}
 
-    @Override
-    public String toString() {
-        final StringBuilder m = new StringBuilder("Matrix ").append(order()).append("\n");
-        for (int r = 0; r < elements.length; r++) {
-            for (int c = 0; c < elements[r].length; c++) {
-                m.append(elements[r][c]).append(" ");
-            }
-            m.append("\n");
-        }
-        return m.toString();
-    }
+	public String order() {
+		return rowNum + "X" + colNum;
+	}
 
-    public Matrix initRandom() {
-        for (int r = 0; r < rowNum; r++) {
-            for (int c = 0; c < colNum; c++) {
-                elements[r][c] = Math.random();
-            }
-        }
-        return this;
+	public void print() {
+		System.out.println(toString());
+	}
 
-    }
+	public Matrix set(final int rowIndex, final int colIndex, final double value) {
+		elements[rowIndex][colIndex] = value;
+		return this;
+	}
 
-    public Matrix apply(final DoubleConsumer operation) {
-        final double[][] result = new double[rowNum][colNum];
+	public Matrix sub(final Matrix other) {
+		return sum(other, false);
+	}
 
-        for (int r = 0; r < elements.length; r++) {
-            for (int c = 0; c < elements[r].length; c++) {
-                result[r][c] = elements[r][c];
-                operation.accept(result[r][c]);
-            }
-        }
-        return this;
-    }
+	public Matrix sum(final Matrix other) {
+		return sum(other, true);
+	}
 
-    public String order() {
-        return rowNum + "X" + colNum;
-    }
+	private Matrix sum(final Matrix other, final boolean isPlus) {
+		if (other == null) {
+			throw new UnsupportedOperationException("Sum operation is no defined to a null matrix");
 
-    public Matrix transpose() {
-        final double[][] copy = new double[colNum][rowNum];
-        for (int r = 0; r < rowNum; r++) {
-            for (int c = 0; c < colNum; c++) {
-                copy[c][r] = elements[r][c];
-            }
-        }
+		}
 
-        return new Matrix(copy);
-    }
+		if (rowNum != other.rowNum || colNum != other.colNum) {
+			throw new UnsupportedOperationException(String.format(
+					"Sum operation is no defined between matrix %s and another matrix %s", order(), other.order()));
+		}
 
-    public Matrix dot(final Matrix other) {
-        if (other == null) {
-            return null;
-        }
-        if (rowNum != other.rowNum || colNum != other.colNum) {
-            throw new IllegalArgumentException(String.format(
-                            "You tried operate a matrix %s and another matrix %s, but both must have the same rom and column numbers",
-                            order(), other.order()));
-        }
-        final Matrix m = new Matrix(rowNum, colNum);
-        for (int r = 0; r < elements.length; r++) {
-            for (int c = 0; c < elements[r].length; c++) {
-                m.set(r, c, elements[r][c] * other.elements[r][c]);
-            }
-        }
-        return m;
-    }
+		final Matrix m = new Matrix(rowNum, colNum);
+		for (int r = 0; r < rowNum; r++) {
+			for (int c = 0; c < colNum; c++) {
+				m.set(r, c, isPlus ? elements[r][c] + other.elements[r][c] : elements[r][c] - other.elements[r][c]);
+			}
+		}
+		return m;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder m = new StringBuilder("Matrix ").append(order()).append(": ");
+		final StringBuilder space = new StringBuilder();
+
+		for (int i = 0; i < m.length(); i++) {
+			space.append(" ");
+		}
+
+		for (int r = 0; r < elements.length; r++) {
+
+			for (int c = 0; c < elements[r].length; c++) {
+				m.append(elements[r][c]);
+				if (c < elements[r].length - 1) {
+					m.append(" ");
+				}
+			}
+			if (r < elements.length - 1) {
+				m.append("\n");
+				m.append(space);
+			}
+
+		}
+		return m.toString();
+	}
+
+	public Matrix transpose() {
+		final double[][] copy = new double[colNum][rowNum];
+		for (int r = 0; r < rowNum; r++) {
+			for (int c = 0; c < colNum; c++) {
+				copy[c][r] = elements[r][c];
+			}
+		}
+
+		return new Matrix(copy);
+	}
 }
