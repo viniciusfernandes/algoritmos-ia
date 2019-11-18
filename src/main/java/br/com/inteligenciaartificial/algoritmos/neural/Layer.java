@@ -8,6 +8,7 @@ public class Layer {
     private Matrix weight;
     private final int index;
     private Matrix biases;
+    private Matrix error;
 
     public Layer(final int index) {
         this.index = index;
@@ -49,4 +50,30 @@ public class Layer {
         return index;
     }
 
+    public Matrix getError() {
+        return error;
+    }
+
+    public void setError(final Matrix error) {
+        this.error = error;
+    }
+
+    public Matrix weightedInput() {
+        input = weight.transpose().multiply(input).sum(biases);
+        return input;
+    }
+
+    public void activateOutput() {
+        outuput = input.operate(this::sigmoid);
+    }
+
+    private double sigmoid(final double z) {
+        return 1d / (1d + Math.pow(Math.E, -z));
+    }
+
+    private double sigmoidDifferential(final double z) {
+        final double sig = sigmoid(z);
+        // Essa eh a expressao algebrica da derivada da funcao sigmoid.
+        return sig * (1 - sig);
+    }
 }

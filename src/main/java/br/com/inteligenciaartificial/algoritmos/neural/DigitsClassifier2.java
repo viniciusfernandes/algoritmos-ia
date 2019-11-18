@@ -83,7 +83,7 @@ public class DigitsClassifier2 {
 
     private void initLayers() {
         final Layer l0 = new Layer(0);
-        l0.setInput(new Column(INPUT_LAYER_SIZE));
+        l0.setOutuput(new Column(INPUT_LAYER_SIZE));
         l0.setBiases(new Column(INPUT_LAYER_SIZE));
         l0.setWeight(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE));
 
@@ -103,10 +103,15 @@ public class DigitsClassifier2 {
         layers[2] = l2;
     }
 
-    private void backPropagation(final int layer, final Matrix error) {}
+    private void backPropagation(final int layer, final Matrix error) {
+        if (layer <= INPUT_LAYER_INDEX) {
+            return;
+        }
+
+    }
 
     private void calcOutputErrors(final Column expectedVal) {
-        final Layer outputLayer = layers[OUTPUT_LAYER_SIZE];
+        final Layer outputLayer = layers[OUTPUT_LAYER_INDEX];
         final Matrix zDerivative = outputLayer.getInput().operate(this::sigmoidDifferential);
         final Matrix activation = outputLayer.getOutuput();
 
@@ -117,29 +122,26 @@ public class DigitsClassifier2 {
     }
 
     public int classify(final Digit digit) {
-        final int d = -1;
-        final double[] output = outputs();
-        // for (int i = 0; i < output.length - 1; i++) {
-        // d = output[i] <= output[i + 1] ? i + 1 : i;
-        // }
-        return d;
+
+        return 1;
     }
 
     private void feedForward() {
-        feedForward(1, layers[0].getOutuput());
+        feedForward(layers[0]);
     }
 
-    private void feedForward(final int layer, final Matrix input) {
-        if (layer > OUTPUT_LAYER_INDEX) {
+    private void feedForward(final Layer layer) {
+        if (layer.getIndex() > OUTPUT_LAYER_INDEX) {
             return;
         }
 
-        final Matrix output = input.operate(this::sigmoid);
+        final int next = layer.getIndex() + 1;
 
-        layers[layer].setInput(input);
-        layers[layer].setOutuput(output);
+        layers[next].setInput(layer.getOutuput());
+        layers[next].weightedInput();
+        layers[next].activateOutput();
 
-        feedForward(layer + 1, output);
+        feedForward(layers[next]);
     }
 
     private void initBatchs(final List<TrainingDigit> data, int amountBatchs) {
@@ -172,9 +174,9 @@ public class DigitsClassifier2 {
     }
 
     private void initInputs(final Digit digit) {
-        final Matrix input = layers[0].getInput();
+        final Matrix out = layers[0].getOutuput();
         for (int i = 0; i < digit.pixels.length; i++) {
-            input.set(i, 0, digit.pixels[i]);
+            out.set(i, 0, digit.pixels[i]);
         }
     }
 
