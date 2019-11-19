@@ -6,8 +6,6 @@ import java.util.List;
 
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
-import br.com.inteligenciaartificial.algoritmos.math.MultiMatrix;
-import br.com.inteligenciaartificial.algoritmos.math.Row;
 
 public class DigitsClassifier {
     private static final int HIDDEN_LAYER_SIZE;
@@ -28,11 +26,6 @@ public class DigitsClassifier {
     }
 
     public static void main(final String[] args) {
-
-        final MultiMatrix m = new MultiMatrix(new Row(new double[] {1, 2, 3}), new Column(new double[] {8, 7, 6}),
-                        new Matrix(new double[] {4, 5, 6}, new double[] {44, 55, 66}));
-
-        m.print();
         DigitsClassifier.teste();
     }
 
@@ -43,6 +36,8 @@ public class DigitsClassifier {
 
         final DigitsClassifier classifier = new DigitsClassifier(0.001, 2);
         classifier.learn(dataTraining);
+
+        System.out.println(classifier.classify(new Digit(new int[] {0, 0, 1, 0, 0})));;
 
     }
 
@@ -90,8 +85,16 @@ public class DigitsClassifier {
     }
 
     public int classify(final Digit digit) {
+        initInputs(digit);
+        feedForward();
 
-        return 1;
+        final Matrix result = layers[OUTPUT_LAYER_INDEX].getInput();
+        for (int i = 0; i < result.getRowNum(); i++) {
+            if (result.get(i, 0) >= 0.5) {
+                return i + 1;
+            }
+        }
+        throw new IllegalStateException("Fail in digit classification. There is no result.");
     }
 
     private void feedForward() {

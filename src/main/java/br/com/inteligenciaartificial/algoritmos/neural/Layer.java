@@ -84,5 +84,4 @@ public class Layer {
     public Matrix weightedError() {
         return weight.multiply(error);
     }
-
 }
