@@ -14,11 +14,6 @@ public class Layer {
         this.index = index;
     }
 
-    public Matrix activate() {
-        final Matrix out = weight.transpose().multiply(input).sum(biases);
-        return out.operate(this::sigmoid);
-    }
-
     public Matrix getBiases() {
         return biases;
     }
@@ -81,8 +76,13 @@ public class Layer {
         return sig * (1 - sig);
     }
 
-    public Matrix weightedInput() {
-        return weight.transpose().multiply(input).sum(biases);
+    public Matrix weightedInput(final Matrix input) {
+        this.input = weight.transpose().multiply(input).sum(biases);
+        return this.input;
+    }
+
+    public Matrix weightedError() {
+        return weight.multiply(error);
     }
 
 }

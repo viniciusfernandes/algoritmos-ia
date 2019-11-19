@@ -44,13 +44,9 @@ public class DigitsClassifier {
 
     }
 
-    private MultiMatrix A;
-    private final MultiMatrix B = new MultiMatrix(null, new Column(HIDDEN_LAYER_SIZE), new Column(OUTPUT_LAYER_SIZE));
-
     private TrainingDigit[][] batchs;
     private int batchSize;
 
-    private final MultiMatrix Error = new MultiMatrix(OUTPUT_LAYER_INDEX);
     private final Layer[] layers = new Layer[NUM_LAYERS];
 
     // Neural network leanin rate
@@ -68,22 +64,27 @@ public class DigitsClassifier {
         initWeights();
     }
 
-    private void backPropagation(final int layer, final Matrix error) {
-        if (layer <= INPUT_LAYER_INDEX) {
+    private void backPropagation(final Layer layer) {
+        if (layer.getIndex() <= INPUT_LAYER_INDEX) {
             return;
         }
-
+        final Layer prevLayer = layers[layer.getIndex() - 1];
+        final Matrix error = layer.weightedError().dot(prevLayer.sigmoidDerivative());
+        prevLayer.setError(error);
+        backPropagation(prevLayer);
     }
 
     private void calcOutputErrors(final Column expectedVal) {
-        final Layer outputLayer = layers[OUTPUT_LAYER_INDEX];
-        final Matrix zDerivative = outputLayer.getInput().operate(this::sigmoidDifferential);
-        final Matrix activation = outputLayer.sigmoid();
+        final Layer lastLayer = layers[OUTPUT_LAYER_INDEX];
+        final Matrix zDerivative = lastLayer.getInput().operate(this::sigmoidDifferential);
+        final Matrix activation = lastLayer.sigmoid();
 
         final Matrix gradC = activation.sub(expectedVal).module();
         final Matrix error = gradC.dot(zDerivative);
 
-        backPropagation(OUTPUT_LAYER_INDEX - 1, error);
+        lastLayer.setError(error);
+
+        backPropagation(lastLayer);
     }
 
     public int classify(final Digit digit) {
@@ -98,7 +99,6 @@ public class DigitsClassifier {
     private void feedForward(final Layer layer) {
         final int next = layer.getIndex() + 1;
         if (layer.getIndex() >= OUTPUT_LAYER_INDEX) {
-            layer.setInput(layer.weightedInput());
             return;
         }
 
@@ -106,11 +106,12 @@ public class DigitsClassifier {
         if (layer.getIndex() == 0) {
             output = layer.getOutput();
         } else {
-            output = layer.activate();
+            output = layer.sigmoid();
         }
 
-        layers[next].setInput(output);
-        feedForward(layers[next]);
+        final Layer nextLayer = layers[next];
+        nextLayer.weightedInput(output);
+        feedForward(nextLayer);
     }
 
     private void initBatchs(final List<TrainingDigit> data, int amountBatchs) {
