@@ -3,77 +3,82 @@ package br.com.inteligenciaartificial.algoritmos.neural;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public class Layer {
-    private Matrix input;
-    private Matrix outuput;
-    private Matrix weight;
-    private final int index;
-    private Matrix biases;
-    private Matrix error;
+	private Matrix biases;
+	private Matrix error;
+	private final int index;
+	private Matrix input;
+	private Matrix outuput;
+	private Matrix weight;
 
-    public Layer(final int index) {
-        this.index = index;
-    }
+	public Layer(final int index) {
+		this.index = index;
+	}
 
-    public Matrix getInput() {
-        return input;
-    }
+	public Matrix activate() {
+		final Matrix out = weight.transpose().multiply(input).sum(biases);
+		return out.operate(this::sigmoid);
+	}
 
-    public void setInput(final Matrix input) {
-        this.input = input;
-    }
+	public Matrix getBiases() {
+		return biases;
+	}
 
-    public Matrix getOutuput() {
-        return outuput;
-    }
+	public Matrix getError() {
+		return error;
+	}
 
-    public void setOutuput(final Matrix outuput) {
-        this.outuput = outuput;
-    }
+	public int getIndex() {
+		return index;
+	}
 
-    public Matrix getWeight() {
-        return weight;
-    }
+	public Matrix getInput() {
+		return input;
+	}
 
-    public void setWeight(final Matrix weight) {
-        this.weight = weight;
-    }
+	public Matrix getOutput() {
+		return outuput;
+	}
 
-    public Matrix getBiases() {
-        return biases;
-    }
+	public Matrix getWeight() {
+		return weight;
+	}
 
-    public void setBiases(final Matrix biases) {
-        this.biases = biases;
-    }
+	public void setBiases(final Matrix biases) {
+		this.biases = biases;
+	}
 
-    public int getIndex() {
-        return index;
-    }
+	public void setError(final Matrix error) {
+		this.error = error;
+	}
 
-    public Matrix getError() {
-        return error;
-    }
+	public void setInput(final Matrix input) {
+		this.input = input;
+	}
 
-    public void setError(final Matrix error) {
-        this.error = error;
-    }
+	public void setOutuput(final Matrix outuput) {
+		this.outuput = outuput;
+	}
 
-    public Matrix weightedInput() {
-        input = weight.transpose().multiply(input).sum(biases);
-        return input;
-    }
+	public void setWeight(final Matrix weight) {
+		this.weight = weight;
+	}
 
-    public void activateOutput() {
-        outuput = input.operate(this::sigmoid);
-    }
+	private double sigmoid(final double z) {
+		return 1d / (1d + Math.pow(Math.E, -z));
+	}
 
-    private double sigmoid(final double z) {
-        return 1d / (1d + Math.pow(Math.E, -z));
-    }
+	public Matrix sigmoidDerivative() {
+		return input.operate(this::sigmoidDerivative);
+	}
 
-    private double sigmoidDifferential(final double z) {
-        final double sig = sigmoid(z);
-        // Essa eh a expressao algebrica da derivada da funcao sigmoid.
-        return sig * (1 - sig);
-    }
+	private double sigmoidDerivative(final double z) {
+		final double sig = sigmoid(z);
+		// Essa eh a expressao algebrica da derivada da funcao sigmoid.
+		return sig * (1 - sig);
+	}
+
+	public Matrix weightedInput() {
+		return weight.transpose().multiply(input).sum(biases);
+	}
+
 }
