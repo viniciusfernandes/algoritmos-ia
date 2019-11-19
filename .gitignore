@@ -1,14 +1,7 @@
 /.settings/*.prefs
 /*.project
 /*.classpath
-/target/classes/META-INF
-/target/classes/br/com/inteligenciaartificial/algoritmos/*.class
-/target/classes/br/com/inteligenciaartificial/algoritmos/neural/*.class
-/target/test-classes/br/com/inteligenciaartificial/algoritmos/*.class
-/target/classes/br/com/inteligenciaartificial/algoritmos/math/*.class
+/target
 /bin/*.gitignore
 /bin/*.xml
-/bin/src/main/java/br/com/inteligenciaartificial/algoritmos/*.class
-/bin/src/main/java/br/com/inteligenciaartificial/algoritmos/math/*.class
-/bin/src/main/java/br/com/inteligenciaartificial/algoritmos/neural/*.class
-/bin/src/test/java/br/com/inteligenciaartificial/algoritmos/*.class
+/bin
