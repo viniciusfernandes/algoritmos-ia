@@ -11,6 +11,7 @@ import br.com.inteligenciaartificial.algoritmos.math.Row;
 
 public class DigitsClassifier {
     private static final int HIDDEN_LAYER_SIZE;
+    private static final int HIDDEN_LAYER_INDEX;
     private static final int INPUT_LAYER_INDEX;
     private static final int INPUT_LAYER_SIZE;
     private static final int NUM_LAYERS;
@@ -20,6 +21,7 @@ public class DigitsClassifier {
         INPUT_LAYER_INDEX = 0;
         INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
         NUM_LAYERS = 3;
+        HIDDEN_LAYER_INDEX = 1;
         HIDDEN_LAYER_SIZE = 15;
         OUTPUT_LAYER_SIZE = 10;
         OUTPUT_LAYER_INDEX = NUM_LAYERS - 1;
@@ -65,7 +67,7 @@ public class DigitsClassifier {
     }
 
     private void backPropagation(final Layer layer) {
-        if (layer.getIndex() <= INPUT_LAYER_INDEX) {
+        if (layer.getIndex() <= HIDDEN_LAYER_INDEX) {
             return;
         }
         final Layer prevLayer = layers[layer.getIndex() - 1];
@@ -151,14 +153,14 @@ public class DigitsClassifier {
     }
 
     private void initLayers() {
-        final Layer l0 = new Layer(0);
+        final Layer l0 = new Layer(INPUT_LAYER_INDEX);
         l0.setOutuput(new Column(INPUT_LAYER_SIZE));
 
-        final Layer l1 = new Layer(1);
+        final Layer l1 = new Layer(HIDDEN_LAYER_INDEX);
         l1.setBiases(new Column(HIDDEN_LAYER_SIZE));
         l1.setWeight(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE));
 
-        final Layer l2 = new Layer(2);
+        final Layer l2 = new Layer(OUTPUT_LAYER_INDEX);
         l2.setBiases(new Column(OUTPUT_LAYER_SIZE));
         l2.setWeight(new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE));
 
