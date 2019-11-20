@@ -21,7 +21,7 @@ public class DigitsClassifier {
 		NUM_LAYERS = 3;
 		HIDDEN_LAYER_INDEX = 1;
 		HIDDEN_LAYER_SIZE = 15;
-		OUTPUT_LAYER_SIZE = 10;
+		OUTPUT_LAYER_SIZE = Digit.DIGITS_SIZE_SET;
 		OUTPUT_LAYER_INDEX = NUM_LAYERS - 1;
 	}
 
@@ -75,7 +75,7 @@ public class DigitsClassifier {
 		final Matrix zDerivative = lastLayer.getInput().operate(this::sigmoidDifferential);
 		final Matrix activation = lastLayer.sigmoid();
 
-		final Matrix gradC = activation.sub(expectedVal).module();
+		final Matrix gradC = activation.sub(expectedVal);
 		final Matrix error = gradC.dot(zDerivative);
 
 		lastLayer.setError(error);
@@ -88,10 +88,21 @@ public class DigitsClassifier {
 		feedForward();
 
 		final Matrix result = layers[OUTPUT_LAYER_INDEX].getInput();
-		for (int i = 0; i < result.getRowNum(); i++) {
-			if (result.get(i, 0) >= 0.5) {
-				return i + 1;
+		int max = -1;
+		final int last = result.getRowNum() - 1;
+		for (int i = 0; i <= last; i++) {
+			if (i == last) {
+				if (max == -1) {
+					max = last;
+				}
+				break;
 			}
+			if (result.get(i, 0) >= result.get(i + 1, 0)) {
+				max = i;
+			}
+		}
+		if (max != -1) {
+			return max + 1;
 		}
 		throw new IllegalStateException("Fail in digit classification. There is no result.");
 	}
