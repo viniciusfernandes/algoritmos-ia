@@ -233,14 +233,20 @@ public class DigitsClassifier {
 		}
 
 		final Layer prevLayer = layers[prev];
+		Matrix error = layer.getError();
 		final Matrix activation = prevLayer.sigmoid();
-		final Matrix weightError = activation.multiply(layer.getError().transpose());
+		final Matrix weightError = activation.multiply(error.transpose());
 		weightError.operate(e -> e * errorRate / batchSize);
 
 		Matrix weight = layer.getWeight();
 		weight = weight.sub(weightError);
-
 		layer.setWeight(weight);
+
+		Matrix biases = layer.getBiases();
+		error = error.operate(e -> e * errorRate / batchSize);
+		biases = biases.sub(error);
+		layer.setBiases(biases);
+
 		updateWeights(prevLayer);
 	}
 }

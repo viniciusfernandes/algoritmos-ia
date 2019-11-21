@@ -33,7 +33,7 @@ public class DigitsClassifierTest {
 	}
 
 	public static void main(final String[] args) {
-		final DigitsClassifier classifier = new DigitsClassifier(0.0001, 1);
+		final DigitsClassifier classifier = new DigitsClassifier(0.5, 1);
 		classifier.learn(DigitsClassifierTest.dataTraining());
 
 		int digit = classifier.classify(new Digit(new int[] { 1, 1, 1 }));
