@@ -6,7 +6,7 @@ import java.util.List;
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
-public class DigitClassifier {
+public class DigitClassifierSimplified {
     private static final int HIDDEN_LAYER_INDEX;
     private static final int HIDDEN_LAYER_SIZE;
     private static final int INPUT_LAYER_INDEX;
@@ -30,9 +30,11 @@ public class DigitClassifier {
     // Neural network leanin rate
     private final double errorRate;
 
-    private final Layer[] layers = new Layer[NUM_LAYERS];
+    private final Layer inLayer = new Layer();
+    private final Layer hiddenLayer = new Layer();
+    private final Layer outLayer = new Layer();
 
-    public DigitClassifier(final double errorRate, final int batchSize) {
+    public DigitClassifierSimplified(final double errorRate, final int batchSize) {
         this.errorRate = errorRate;
         this.batchSize = batchSize;
 
@@ -44,56 +46,33 @@ public class DigitClassifier {
         initWeights();
     }
 
-    private void backPropagation(final Layer layer) {
-        if (layer.getIndex() <= HIDDEN_LAYER_INDEX) {
-            return;
-        }
-        final Layer prevLayer = layers[layer.getIndex() - 1];
-        final Matrix error = layer.weightedError().dot(prevLayer.sigmoidDerivative());
-        prevLayer.setError(error);
-        backPropagation(prevLayer);
-    }
-
-    private void calcOutputErrors(final Column expectedVal) {
-        final Layer lastLayer = layers[OUTPUT_LAYER_INDEX];
-        final Matrix zDerivative = lastLayer.getInput().operate(this::sigmoidDifferential);
-        final Matrix activation = lastLayer.sigmoid();
+    private void backPropagation(final Column expectedVal) {
+        final Matrix zDerivative = outLayer.getInput().operate(this::sigmoidDifferential);
+        final Matrix activation = outLayer.sigmoid();
 
         final Matrix gradC = outputValue(activation).sub(expectedVal);
-        final Matrix error = gradC.dot(zDerivative);
+        Matrix error = gradC.dot(zDerivative);
 
-        lastLayer.setError(error);
+        outLayer.setError(error);
 
-        backPropagation(lastLayer);
+        error = outLayer.weightedError().dot(hiddenLayer.sigmoidDerivative());
+        hiddenLayer.setError(error);
+
     }
 
     public int classify(final Digit digit) {
         initInputs(digit);
         feedForward();
 
-        return output(layers[OUTPUT_LAYER_INDEX].getInput());
+        return output(outLayer.getInput());
     }
 
     private void feedForward() {
-        feedForward(layers[0]);
-    }
+        Matrix output = inLayer.getOutput();
+        hiddenLayer.weightedInput(output);
 
-    private void feedForward(final Layer layer) {
-        final int next = layer.getIndex() + 1;
-        if (layer.getIndex() >= OUTPUT_LAYER_INDEX) {
-            return;
-        }
-
-        Matrix output = null;
-        if (layer.getIndex() == 0) {
-            output = layer.getOutput();
-        } else {
-            output = layer.sigmoid();
-        }
-
-        final Layer nextLayer = layers[next];
-        nextLayer.weightedInput(output);
-        feedForward(nextLayer);
+        output = hiddenLayer.sigmoid();
+        outLayer.weightedInput(output);
     }
 
     private void initBatchs(final List<TrainingDigit> data, int amountBatchs) {
@@ -121,37 +100,30 @@ public class DigitClassifier {
     }
 
     private void initBiases() {
-        layers[1].getBiases().initRandom();
-        layers[2].getBiases().initRandom();
+        hiddenLayer.getBiases().initRandom();
+        outLayer.getBiases().initRandom();
     }
 
     private void initInputs(final Digit digit) {
-        final Matrix out = layers[0].getOutput();
+        final Matrix out = inLayer.getOutput();
         for (int i = 0; i < Digit.PIXELS_PER_DIGIT; i++) {
             out.set(i, 0, digit.getPixel(i));
         }
     }
 
     private void initLayers() {
-        final Layer l0 = new Layer(INPUT_LAYER_INDEX);
-        l0.setOutuput(new Column(INPUT_LAYER_SIZE));
+        inLayer.setOutuput(new Column(INPUT_LAYER_SIZE));
 
-        final Layer l1 = new Layer(HIDDEN_LAYER_INDEX);
-        l1.setBiases(new Column(HIDDEN_LAYER_SIZE));
-        l1.setWeight(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE));
+        hiddenLayer.setBiases(new Column(HIDDEN_LAYER_SIZE));
+        hiddenLayer.setWeight(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE));
 
-        final Layer l2 = new Layer(OUTPUT_LAYER_INDEX);
-        l2.setBiases(new Column(OUTPUT_LAYER_SIZE));
-        l2.setWeight(new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE));
-
-        layers[0] = l0;
-        layers[1] = l1;
-        layers[2] = l2;
+        outLayer.setBiases(new Column(OUTPUT_LAYER_SIZE));
+        outLayer.setWeight(new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE));
     }
 
     private void initWeights() {
-        layers[1].getWeight().initRandom();
-        layers[2].getWeight().initRandom();
+        hiddenLayer.getWeight().initRandom();
+        outLayer.getWeight().initRandom();
     }
 
     private void learn() {
@@ -162,7 +134,7 @@ public class DigitClassifier {
 
                 initInputs(data);
                 feedForward();
-                calcOutputErrors(new Column(data.getExpectedOutput()));
+                backPropagation(new Column(data.getExpectedOutput()));
             }
 
         }
