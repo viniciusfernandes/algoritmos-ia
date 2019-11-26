@@ -10,14 +10,14 @@ public class Main {
         final List<TrainingDigit> trainingData =
                         new MnistDataReader().readData("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
 
-        final DigitClassifier classifier = new DigitClassifier(0.08, 1);
+        final DigitClassifier classifier = new DigitClassifier();
         System.out.println("-------------------------");
         System.out.println("LEARNING IS JUST BEGINNIG");
         System.out.println("-------------------------");
 
         final Date init = new Date();
 
-        classifier.learn(trainingData);
+        classifier.training(trainingData);
 
         final Date end = new Date();
 

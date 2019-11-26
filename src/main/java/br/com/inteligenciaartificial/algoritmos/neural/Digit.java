@@ -25,5 +25,4 @@ public class Digit {
     public int getPixel(final int index) {
         return pixels[index];
     }
-
 }
