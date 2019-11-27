@@ -12,11 +12,6 @@ public class Column extends Matrix {
         super(size, 1);
     }
 
-    public Column set(final int rowIndex, final double value) {
-        super.set(rowIndex, 0, value);
-        return this;
-    }
-
     @Override
     public Column copy() {
         final double[] copy = new double[getRowNum()];
@@ -24,6 +19,11 @@ public class Column extends Matrix {
             copy[i] = get(i, 0);
         }
         return new Column(copy);
+    }
+
+    public Column set(final int rowIndex, final double value) {
+        super.set(rowIndex, 0, value);
+        return this;
     }
 
 }

@@ -18,11 +18,11 @@ public class Digit {
         this.pixels = pixels;
     }
 
-    public int[] getPixels() {
-        return pixels;
-    }
-
     public int getPixel(final int index) {
         return pixels[index];
+    }
+
+    public int[] getPixels() {
+        return pixels;
     }
 }

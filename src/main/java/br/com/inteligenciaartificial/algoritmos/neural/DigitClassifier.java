@@ -7,23 +7,23 @@ import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public class DigitClassifier {
+    // Neural network leanin rate
+    private static final double ERROR_RATE = 0.01;
     private static final int HIDDEN_LAYER_SIZE;
     private static final int INPUT_LAYER_SIZE;
     private static final int OUTPUT_LAYER_SIZE;
+
     static {
         INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
         HIDDEN_LAYER_SIZE = 15;
         OUTPUT_LAYER_SIZE = Digit.DIGITS_SIZE_SET;
     }
-
-    private TrainingDigit[][] batchs;
     private final int batchLength = 1;
 
-    // Neural network leanin rate
-    private static final double ERROR_RATE = 0.01;
+    private TrainingDigit[][] batchs;
 
-    private final Layer inLayer = new Layer();
     private final Layer hiddenLayer = new Layer();
+    private final Layer inLayer = new Layer();
     private final Layer outLayer = new Layer();
 
     public DigitClassifier() {
@@ -53,6 +53,12 @@ public class DigitClassifier {
         feedForward();
 
         return output(outLayer.getInput());
+    }
+
+    private void clearLayers() {
+        inLayer.clear();
+        hiddenLayer.clear();
+        outLayer.clear();
     }
 
     private void feedForward() {
@@ -125,51 +131,8 @@ public class DigitClassifier {
                 backPropagation(new Column(data.getExpectedOutput()));
             }
             updateWeights();
-            clearLayers();
+            // clearLayers();
         }
-    }
-
-    private void clearLayers() {
-        inLayer.clear();
-        hiddenLayer.clear();
-        outLayer.clear();
-    }
-
-    public void training(final List<TrainingDigit> data) {
-        shuffleData(data);
-        initBatchs(data);
-        learn();
-    }
-
-    private void shuffleData(final List<TrainingDigit> data) {
-        Collections.shuffle(data);
-    }
-
-    private void updateWeights() {
-        Matrix activation = null;
-        Matrix weightError = null;
-        Matrix biasError = null;
-
-        final int tot = outLayer.getErrors().size();
-        Matrix error = null;
-        for (int i = 0; i < tot; i++) {
-            error = outLayer.getError(i);
-            if (weightError == null) {
-                biasError = error;
-                weightError = error;
-                continue;
-            }
-            biasError.sum(error);
-
-            activation = hiddenLayer.getOutput(i);
-            weightError.sum(activation.multiply(error.transpose()));
-        }
-
-        weightError = weightError.operate(e -> e * ERROR_RATE / batchLength);
-        biasError = biasError.operate(e -> e * ERROR_RATE / batchLength);
-
-        outLayer.subtractWeightError(weightError);
-        outLayer.subtractBiasError(biasError);
     }
 
     private int output(final Matrix activation) {
@@ -181,6 +144,67 @@ public class DigitClassifier {
             }
         }
         return max;
+    }
+
+    private void shuffleData(final List<TrainingDigit> data) {
+        Collections.shuffle(data);
+    }
+
+    public void training(final List<TrainingDigit> data) {
+        shuffleData(data);
+        initBatchs(data);
+        learn();
+    }
+
+    private void updateWeights() {
+        Matrix output = null;
+        Matrix outWeightError = null;
+        Matrix outBiasError = null;
+
+        Matrix hiddenWeightError = null;
+        Matrix hiddenBiasError = null;
+
+        int tot = outLayer.getErrors().size();
+        Matrix error = null;
+        for (int i = 0; i < tot; i++) {
+            error = outLayer.getError(i);
+            output = hiddenLayer.getOutput(i);
+            if (outWeightError == null || outBiasError == null) {
+                outBiasError = error;
+                outWeightError = output.multiply(error.transpose());
+
+            } else {
+                outBiasError = outBiasError.sum(error);
+                outWeightError = outWeightError.sum(output.multiply(error.transpose()));
+            }
+
+        }
+
+        tot = hiddenLayer.getErrors().size();
+        for (int i = 0; i < tot; i++) {
+            error = hiddenLayer.getError(i);
+            output = inLayer.getOutput(i);
+            if (hiddenWeightError == null || hiddenBiasError == null) {
+                hiddenBiasError = error;
+                hiddenWeightError = output.multiply(error.transpose());
+
+            } else {
+                hiddenBiasError = hiddenBiasError.sum(error);
+                hiddenWeightError = hiddenWeightError.sum(output.multiply(error.transpose()));
+            }
+        }
+
+        outWeightError = outWeightError.operate(e -> e * ERROR_RATE / batchLength);
+        outBiasError = outBiasError.operate(e -> e * ERROR_RATE / batchLength);
+
+        hiddenWeightError = hiddenWeightError.operate(e -> e * ERROR_RATE / batchLength);
+        hiddenBiasError = hiddenBiasError.operate(e -> e * ERROR_RATE / batchLength);
+
+        outLayer.subtractWeightError(outWeightError);
+        outLayer.subtractBiasError(outBiasError);
+
+        hiddenLayer.subtractWeightError(hiddenWeightError);
+        hiddenLayer.subtractBiasError(hiddenBiasError);
     }
 
 }

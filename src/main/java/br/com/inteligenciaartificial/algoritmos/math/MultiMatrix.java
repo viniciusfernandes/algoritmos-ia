@@ -25,10 +25,6 @@ public class MultiMatrix {
         return this;
     }
 
-    public Matrix operate(final int index, final MatrixOperation operation) {
-        return elements[index].operate(operation);
-    }
-
     public MultiMatrix copy() {
         final MultiMatrix m = new MultiMatrix(elements.length);
         for (int i = 0; i < elements.length; i++) {
@@ -62,6 +58,10 @@ public class MultiMatrix {
 
     public Matrix multiply(final int index, final Matrix other) {
         return elements[index].multiply(other);
+    }
+
+    public Matrix operate(final int index, final MatrixOperation operation) {
+        return elements[index].operate(operation);
     }
 
     public void print() {

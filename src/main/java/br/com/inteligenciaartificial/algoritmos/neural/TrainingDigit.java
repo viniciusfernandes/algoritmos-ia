@@ -2,13 +2,9 @@ package br.com.inteligenciaartificial.algoritmos.neural;
 
 public class TrainingDigit extends Digit {
     public static final int OUTPUT_SIZE = 10;
-    private final double[] expectedOutput;
-
-    public double[] getExpectedOutput() {
-        return expectedOutput;
-    }
-
     private final int expectedDigit;
+
+    private final double[] expectedOutput;
 
     public TrainingDigit(final int[] pixels, final int expectedDigit) {
         super(pixels);
@@ -19,6 +15,10 @@ public class TrainingDigit extends Digit {
 
     public int getExpectedDigit() {
         return expectedDigit;
+    }
+
+    public double[] getExpectedOutput() {
+        return expectedOutput;
     }
 
 }
