@@ -17,18 +17,25 @@ public class Layer {
     private final List<Matrix> outputs = new ArrayList<>();
     private Matrix weight;
 
-    public Layer() {
-
-    }
-
     public Matrix activate() {
-        final Matrix activation = input.operate(this::sigmoid);
-        outputs.add(activation);
-        return activation;
+        output = input.operate(this::sigmoid);
+        outputs.add(output);
+        return output;
     }
 
+    public Matrix activate(final Matrix input) {
+        this.input = weight.transpose().multiply(input).sum(biases).operate(this::sigmoid);
+        inputs.add(input);
+        return this.input;
+    }
+
+    @Deprecated
     public Matrix activateDerivative() {
         return input.operate(this::sigmoidDerivative);
+    }
+
+    public Matrix activateDerivative(final Matrix input) {
+        return weighting(input).operate(this::sigmoidDerivative);
     }
 
     public void addError(final Matrix error) {
@@ -124,10 +131,8 @@ public class Layer {
         return weight.multiply(error);
     }
 
-    public Matrix weightedInput(final Matrix input) {
-        this.input = weight.transpose().multiply(input).sum(biases);
-        inputs.add(input);
-        return this.input;
+    public Matrix weighting(final Matrix input) {
+        return weight.transpose().multiply(input).sum(biases);
     }
 
 }

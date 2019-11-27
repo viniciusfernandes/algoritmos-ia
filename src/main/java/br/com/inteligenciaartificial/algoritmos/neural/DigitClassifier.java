@@ -36,10 +36,15 @@ public class DigitClassifier {
     }
 
     private void backPropagation(final Column expectedVal) {
-        final Matrix act = outLayer.activate();
-        final Matrix actDerivative = outLayer.activateDerivative();
+        final Matrix z2 = hiddenLayer.weighting(inLayer.getOutput());
+        final Matrix z3 = outLayer.activate(z2);
 
-        final Matrix gradC = act.sub(expectedVal);
+        final Matrix input = hiddenLayer.getInput();
+        final Matrix actDerivative = outLayer.activateDerivative(input);
+
+        final Matrix activation = outLayer.getInput();
+
+        final Matrix gradC = activation.sub(expectedVal);
         Matrix error = gradC.dot(actDerivative);
 
         outLayer.addError(error);
@@ -62,11 +67,7 @@ public class DigitClassifier {
     }
 
     private void feedForward() {
-        Matrix output = inLayer.getOutput();
-        hiddenLayer.weightedInput(output);
-
-        output = hiddenLayer.activate();
-        outLayer.weightedInput(output);
+        outLayer.activate(hiddenLayer.activate(inLayer.getOutput()));
     }
 
     private void initBatchs(final List<TrainingDigit> data) {
@@ -131,7 +132,7 @@ public class DigitClassifier {
                 backPropagation(new Column(data.getExpectedOutput()));
             }
             updateWeights();
-            // clearLayers();
+            clearLayers();
         }
     }
 
