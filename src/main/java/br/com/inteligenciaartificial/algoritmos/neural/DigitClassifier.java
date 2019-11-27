@@ -183,24 +183,4 @@ public class DigitClassifier {
         return max;
     }
 
-
-    private int output(final Matrix activation) {
-        int max = 0;
-        final int last = activation.getRowNum() - 1;
-        for (int i = 0; i < last; i++) {
-            if (activation.get(max, 0) < activation.get(i + 1, 0)) {
-                max = i + 1;
-            }
-        }
-        return max;
-    }
-
-    private Column outputValue(final Matrix activation) {
-        final int digit = output(activation);
-
-        final Column out = new Column(activation.getRowNum());
-        out.set(digit, 1);
-        return out;
-    }
-
 }
