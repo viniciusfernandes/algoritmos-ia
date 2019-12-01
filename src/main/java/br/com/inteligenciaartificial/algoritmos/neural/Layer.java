@@ -3,136 +3,149 @@ package br.com.inteligenciaartificial.algoritmos.neural;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public class Layer {
-    private Matrix biases;
-    private Matrix error;
+	private Matrix biases;
+	private Matrix error;
 
-    private List<Matrix> errors = new ArrayList<>();
-    private Matrix input;
+	private List<Matrix> errors = new ArrayList<>();
+	private Matrix input;
 
-    private final List<Matrix> inputs = new ArrayList<>();
-    private Matrix output;
-    private final List<Matrix> outputs = new ArrayList<>();
-    private Matrix weight;
+	private final List<Matrix> inputs = new ArrayList<>();
+	private Matrix output;
+	private final List<Matrix> outputs = new ArrayList<>();
+	private Matrix weight;
 
-    public Matrix activate() {
-        output = input.operate(this::sigmoid);
-        outputs.add(output);
-        return output;
-    }
+	public Layer() {
+	}
 
-    public Matrix activate(final Matrix input) {
-        this.input = weight.transpose().multiply(input).sum(biases).operate(this::sigmoid);
-        inputs.add(input);
-        return this.input;
-    }
+	public Layer(final int inputs, final int outputs) {
+		input = new Column(inputs);
+		output = new Column(outputs);
+		weight = new Matrix(inputs, outputs);
+	}
 
-    @Deprecated
-    public Matrix activateDerivative() {
-        return input.operate(this::sigmoidDerivative);
-    }
+	public Matrix activate() {
+		output = input.operate(this::sigmoid);
+		outputs.add(output);
+		return output;
+	}
 
-    public Matrix activateDerivative(final Matrix input) {
-        return weighting(input).operate(this::sigmoidDerivative);
-    }
+	public Matrix activate(final Matrix input) {
+		this.input = estimulate(input).operate(this::sigmoid);
+		inputs.add(input);
+		return this.input;
+	}
 
-    public void addError(final Matrix error) {
-        if (errors == null) {
-            errors = new ArrayList<>();
-        }
-        errors.add(error);
-        this.error = error;
-    }
+	@Deprecated
+	public Matrix activateDerivative() {
+		return input.operate(this::sigmoidDerivative);
+	}
 
-    public void clear() {
-        errors.clear();
-        inputs.clear();
-        outputs.clear();
-        input = null;
-        output = null;
-        error = null;
-    }
+	public Matrix activateDerivative(final Matrix input) {
+		return estimulate(input).operate(this::sigmoidDerivative);
+	}
 
-    public Matrix getBiases() {
-        return biases;
-    }
+	public void addError(final Matrix error) {
+		if (errors == null) {
+			errors = new ArrayList<>();
+		}
+		errors.add(error);
+		this.error = error;
+	}
 
-    public Matrix getError(final int index) {
-        return errors.get(index);
-    }
+	public void clear() {
+		errors.clear();
+		inputs.clear();
+		outputs.clear();
+		input = null;
+		output = null;
+		error = null;
+	}
 
-    public List<Matrix> getErrors() {
-        return errors;
-    }
+	public Matrix estimulate(final Matrix input) {
+		return weight.transpose().multiply(input).sub(biases);
+	}
 
-    public Matrix getInput() {
-        return input;
-    }
+	public Matrix getBiases() {
+		return biases;
+	}
 
-    public Matrix getInput(final int index) {
-        return inputs.get(index);
-    }
+	public Matrix getError(final int index) {
+		return errors.get(index);
+	}
 
-    public Matrix getOutput() {
-        return output;
-    }
+	public List<Matrix> getErrors() {
+		return errors;
+	}
 
-    public Matrix getOutput(final int index) {
-        return outputs.get(index);
-    }
+	public Matrix getInput() {
+		return input;
+	}
 
-    public Matrix getWeight() {
-        return weight;
-    }
+	public Matrix getInput(final int index) {
+		return inputs.get(index);
+	}
 
-    public void setBiases(final Matrix biases) {
-        this.biases = biases;
-    }
+	public Matrix getOutput() {
+		return output;
+	}
 
-    public void setErrors(final List<Matrix> errors) {
-        this.errors = errors;
-    }
+	public Matrix getOutput(final int index) {
+		return outputs.get(index);
+	}
 
-    public void setInput(final Matrix input) {
-        this.input = input;
-    }
+	public Matrix getWeight() {
+		return weight;
+	}
 
-    public void setOutput(final Matrix outuput) {
-        output = outuput;
-    }
+	public int normalize(final double output) {
+		return output > 0 ? 1 : -1;
+	}
 
-    public void setWeight(final Matrix weight) {
-        this.weight = weight;
-    }
+	public void setBiases(final Matrix biases) {
+		this.biases = biases;
+	}
 
-    private double sigmoid(final double z) {
-        return 1d / (1d + Math.pow(Math.E, -z));
-    }
+	public void setErrors(final List<Matrix> errors) {
+		this.errors = errors;
+	}
 
-    private double sigmoidDerivative(final double z) {
-        final double sig = sigmoid(z);
-        // Essa eh a expressao algebrica da derivada da funcao sigmoid.
-        return sig * (1 - sig);
-    }
+	public void setInput(final Matrix input) {
+		this.input = input;
+	}
 
-    public Matrix subtractBiasError(final Matrix error) {
-        biases = biases.sub(error);
-        return biases;
-    }
+	public void setOutput(final Matrix outuput) {
+		output = outuput;
+	}
 
-    public Matrix subtractWeightError(final Matrix error) {
-        weight = weight.sub(error);
-        return weight;
-    }
+	public void setWeight(final Matrix weight) {
+		this.weight = weight;
+	}
 
-    public Matrix weightedError() {
-        return weight.multiply(error);
-    }
+	private double sigmoid(final double z) {
+		return 1d / (1d + Math.exp(-z));
+	}
 
-    public Matrix weighting(final Matrix input) {
-        return weight.transpose().multiply(input).sum(biases);
-    }
+	private double sigmoidDerivative(final double z) {
+		final double sig = sigmoid(z);
+		// Essa eh a expressao algebrica da derivada da funcao sigmoid.
+		return sig * (1 - sig);
+	}
 
+	public Matrix subtractBiasError(final Matrix error) {
+		biases = biases.sub(error);
+		return biases;
+	}
+
+	public Matrix subtractWeightError(final Matrix error) {
+		weight = weight.sub(error);
+		return weight;
+	}
+
+	public Matrix weightedError() {
+		return weight.multiply(error);
+	}
 }

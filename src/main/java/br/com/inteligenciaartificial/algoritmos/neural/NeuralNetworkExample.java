@@ -6,17 +6,17 @@ import java.util.List;
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
-public class DigitClassifier {
+public class NeuralNetworkExample {
 	// Neural network leanin rate
-	private static final double ERROR_RATE = 0.01;
+	private static final double ERROR_RATE = 0.5;
 	private static final int HIDDEN_LAYER_SIZE;
 	private static final int INPUT_LAYER_SIZE;
 	private static final int OUTPUT_LAYER_SIZE;
 
 	static {
-		INPUT_LAYER_SIZE = Digit.PIXELS_PER_DIGIT;
-		HIDDEN_LAYER_SIZE = 15;
-		OUTPUT_LAYER_SIZE = Digit.DIGITS_SIZE_SET;
+		INPUT_LAYER_SIZE = 3;
+		HIDDEN_LAYER_SIZE = 1;
+		OUTPUT_LAYER_SIZE = 1;
 	}
 	private final int batchLength = 1;
 
@@ -26,7 +26,7 @@ public class DigitClassifier {
 	private final Layer inLayer = new Layer();
 	private final Layer outLayer = new Layer();
 
-	public DigitClassifier() {
+	public NeuralNetworkExample() {
 		initLayers();
 		// Initializing biases and weights with randomly to apply the stoschastic
 		// gradient
@@ -40,15 +40,19 @@ public class DigitClassifier {
 		final Matrix input = hiddenLayer.getInput();
 		final Matrix actDerivative = outLayer.activateDerivative(input);
 
-		final Matrix activation = outLayer.getInput();
+		final Matrix output = calOutput();
 
-		final Matrix gradC = activation.sub(expectedVal);
+		final Matrix gradC = output.sub(expectedVal);
 		Matrix error = gradC.dot(actDerivative);
 
 		outLayer.addError(error);
 
 		error = outLayer.weightedError().dot(hiddenLayer.activateDerivative());
 		hiddenLayer.addError(error);
+	}
+
+	private Matrix calOutput() {
+		return new Column(new double[10]);
 	}
 
 	public int classify(final Digit digit) {
@@ -94,7 +98,6 @@ public class DigitClassifier {
 
 	private void initBiases() {
 		hiddenLayer.getBiases().initRandom();
-		outLayer.getBiases().initRandom();
 	}
 
 	private void initInputs(final Digit digit) {
@@ -109,14 +112,10 @@ public class DigitClassifier {
 
 		hiddenLayer.setBiases(new Column(HIDDEN_LAYER_SIZE));
 		hiddenLayer.setWeight(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE));
-
-		outLayer.setBiases(new Column(OUTPUT_LAYER_SIZE));
-		outLayer.setWeight(new Matrix(HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE));
 	}
 
 	private void initWeights() {
 		hiddenLayer.getWeight().initRandom();
-		outLayer.getWeight().initRandom();
 	}
 
 	private void learn() {
@@ -205,5 +204,4 @@ public class DigitClassifier {
 		hiddenLayer.subtractWeightError(hiddenWeightError);
 		hiddenLayer.subtractBiasError(hiddenBiasError);
 	}
-
 }

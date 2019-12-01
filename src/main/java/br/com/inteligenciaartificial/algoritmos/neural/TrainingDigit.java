@@ -6,11 +6,11 @@ public class TrainingDigit extends Digit {
 
     private final double[] expectedOutput;
 
-    public TrainingDigit(final int[] pixels, final int expectedDigit) {
-        super(pixels);
+    public TrainingDigit(final int[] inputValues, final int expectedValue) {
+        super(inputValues);
         expectedOutput = new double[OUTPUT_SIZE];
-        expectedOutput[expectedDigit] = 1;
-        this.expectedDigit = expectedDigit;
+        expectedOutput[expectedValue] = 1;
+        this.expectedDigit = expectedValue;
     }
 
     public int getExpectedDigit() {
