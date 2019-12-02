@@ -6,30 +6,30 @@ import java.util.List;
 
 public class Main {
 
-    public static void main(final String[] args) throws IOException {
-        final List<TrainingDigit> trainingData =
-                        new MnistDataReader().readData("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
+	public static void main(final String[] args) throws IOException {
+		final List<TrainingDigit> trainingData = new MnistDataReader().readData("data/train-images.idx3-ubyte",
+				"data/train-labels.idx1-ubyte");
 
-        final DigitClassifier classifier = new DigitClassifier();
-        System.out.println("-------------------------");
-        System.out.println("LEARNING IS JUST BEGINNIG");
-        System.out.println("-------------------------");
+		final DigitClassifier classifier = new DigitClassifier();
+		System.out.println("-------------------------");
+		System.out.println("LEARNING IS JUST BEGINNIG");
+		System.out.println("-------------------------");
 
-        final Date init = new Date();
+		final Date init = new Date();
 
-        classifier.training(trainingData);
+		classifier.training(trainingData);
 
-        final Date end = new Date();
+		final Date end = new Date();
 
-        System.out.println(String.format("LEARNING IS COMPLETED in %d secs.", (end.getTime() - init.getTime()) / 1000));
-        System.out.println("-------------------------");
+		System.out.println(String.format("LEARNING IS COMPLETED in %d secs.", (end.getTime() - init.getTime()) / 1000));
+		System.out.println("-------------------------");
 
-        TrainingDigit data = null;
+		TrainingDigit data = null;
 
-        for (int i = 0; i < 10; i++) {
-            data = trainingData.get(i);
-            System.out.println(
-                            String.format("The digit is %d, and was classified as %d", data.getExpectedDigit(), classifier.classify(data)));
-        }
-    }
+		for (int i = 0; i < 10; i++) {
+			data = trainingData.get(i);
+			System.out.println(String.format("The digit is %d, and was classified as %d", data.getValue(),
+					classifier.classify(data)));
+		}
+	}
 }

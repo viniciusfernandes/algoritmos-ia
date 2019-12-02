@@ -98,12 +98,10 @@ public class Matrix {
 	public Matrix initRandom() {
 		for (int r = 0; r < rowNum; r++) {
 			for (int c = 0; c < colNum; c++) {
-				// This random values must be in -1 to 1 interval
-				elements[r][c] = 2 * Math.random() - 1;
+				elements[r][c] = Math.random();
 			}
 		}
 		return this;
-
 	}
 
 	public Matrix module() {
