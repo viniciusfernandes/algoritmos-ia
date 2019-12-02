@@ -18,24 +18,24 @@ public class Layer {
     private Matrix weight;
 
     public Matrix activate() {
-        output = input.operate(this::sigmoid);
+        output = input.apply(this::sigmoid);
         outputs.add(output);
         return output;
     }
 
     public Matrix activate(final Matrix input) {
-        this.input = weight.transpose().multiply(input).sum(biases).operate(this::sigmoid);
+        this.input = weight.transpose().multiply(input).sum(biases).apply(this::sigmoid);
         inputs.add(input);
         return this.input;
     }
 
     @Deprecated
     public Matrix activateDerivative() {
-        return input.operate(this::sigmoidDerivative);
+        return input.apply(this::sigmoidDerivative);
     }
 
     public Matrix activateDerivative(final Matrix input) {
-        return weighting(input).operate(this::sigmoidDerivative);
+        return weighting(input).apply(this::sigmoidDerivative);
     }
 
     public void addError(final Matrix error) {

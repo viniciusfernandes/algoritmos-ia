@@ -195,11 +195,11 @@ public class DigitClassifier {
             }
         }
 
-        outWeightError = outWeightError.operate(e -> e * ERROR_RATE / batchLength);
-        outBiasError = outBiasError.operate(e -> e * ERROR_RATE / batchLength);
+        outWeightError = outWeightError.apply(e -> e * ERROR_RATE / batchLength);
+        outBiasError = outBiasError.apply(e -> e * ERROR_RATE / batchLength);
 
-        hiddenWeightError = hiddenWeightError.operate(e -> e * ERROR_RATE / batchLength);
-        hiddenBiasError = hiddenBiasError.operate(e -> e * ERROR_RATE / batchLength);
+        hiddenWeightError = hiddenWeightError.apply(e -> e * ERROR_RATE / batchLength);
+        hiddenBiasError = hiddenBiasError.apply(e -> e * ERROR_RATE / batchLength);
 
         outLayer.subtractWeightError(outWeightError);
         outLayer.subtractBiasError(outBiasError);

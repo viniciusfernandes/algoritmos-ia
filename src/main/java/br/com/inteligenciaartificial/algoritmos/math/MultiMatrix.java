@@ -61,7 +61,7 @@ public class MultiMatrix {
     }
 
     public Matrix operate(final int index, final MatrixOperation operation) {
-        return elements[index].operate(operation);
+        return elements[index].apply(operation);
     }
 
     public void print() {
