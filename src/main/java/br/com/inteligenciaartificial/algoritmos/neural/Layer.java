@@ -2,137 +2,140 @@ package br.com.inteligenciaartificial.algoritmos.neural;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public class Layer {
-    private Matrix biases;
-    private Matrix error;
+	private final Function<Matrix, Matrix> activation;
 
-    private List<Matrix> errors = new ArrayList<>();
-    private Matrix input;
+	private Matrix biases;
 
-    private final List<Matrix> inputs = new ArrayList<>();
-    private Matrix output;
-    private final List<Matrix> outputs = new ArrayList<>();
-    private Matrix weight;
+	private Matrix error;
+	private List<Matrix> errors = new ArrayList<>();
 
-    public Matrix activate() {
-        output = input.apply(this::sigmoid);
-        outputs.add(output);
-        return output;
-    }
+	private Matrix input;
+	private final List<Matrix> inputs = new ArrayList<>();
+	private final List<Matrix> outputs = new ArrayList<>();
 
-    public Matrix activate(final Matrix input) {
-        this.input = weight.transpose().multiply(input).sum(biases).apply(this::sigmoid);
-        inputs.add(input);
-        return this.input;
-    }
+	private Matrix weight;
 
-    @Deprecated
-    public Matrix activateDerivative() {
-        return input.apply(this::sigmoidDerivative);
-    }
+	public Layer() {
+		activation = null;
+	}
 
-    public Matrix activateDerivative(final Matrix input) {
-        return weighting(input).apply(this::sigmoidDerivative);
-    }
+	public Layer(final Function<Matrix, Matrix> activation) {
+		this.activation = activation;
+	}
 
-    public void addError(final Matrix error) {
-        if (errors == null) {
-            errors = new ArrayList<>();
-        }
-        errors.add(error);
-        this.error = error;
-    }
+	public Matrix activate() {
+		return activation.apply(estimulate(input));
+	}
 
-    public void clear() {
-        errors.clear();
-        inputs.clear();
-        outputs.clear();
-        input = null;
-        output = null;
-        error = null;
-    }
+	public Matrix activate(final int indexInput) {
+		return activation.apply(estimulate(getInput(indexInput)));
+	}
 
-    public Matrix getBiases() {
-        return biases;
-    }
+	public Layer activate(final Layer nextLayer) {
+		nextLayer.addInput(activation.apply(estimulate(input)));
+		return nextLayer;
+	}
 
-    public Matrix getError(final int index) {
-        return errors.get(index);
-    }
+	public void addError(final Matrix error) {
+		errors.add(error);
+		this.error = error;
+	}
 
-    public List<Matrix> getErrors() {
-        return errors;
-    }
+	public void addInput(final Matrix input) {
+		setInput(input);
+		inputs.add(input);
+	}
 
-    public Matrix getInput() {
-        return input;
-    }
+	public Layer backPropagate(final Layer previousLayer) {
+		return previousLayer;
+	}
 
-    public Matrix getInput(final int index) {
-        return inputs.get(index);
-    }
+	public void clear() {
+		errors.clear();
+		inputs.clear();
+		outputs.clear();
+		input = null;
+		error = null;
+	}
 
-    public Matrix getOutput() {
-        return output;
-    }
+	public Matrix estimulate(final Matrix input) {
+		return weight.transpose().multiply(input).sub(biases);
+	}
 
-    public Matrix getOutput(final int index) {
-        return outputs.get(index);
-    }
+	public Layer estimulating(final Layer nextLayer) {
+		nextLayer.addInput(estimulate(input));
+		return nextLayer;
+	}
 
-    public Matrix getWeight() {
-        return weight;
-    }
+	public Matrix getBiases() {
+		return biases;
+	}
 
-    public void setBiases(final Matrix biases) {
-        this.biases = biases;
-    }
+	public Matrix getError(final int index) {
+		return errors.get(index);
+	}
 
-    public void setErrors(final List<Matrix> errors) {
-        this.errors = errors;
-    }
+	public List<Matrix> getErrors() {
+		return errors;
+	}
 
-    public void setInput(final Matrix input) {
-        this.input = input;
-    }
+	public Matrix getInput() {
+		return input;
+	}
 
-    public void setOutput(final Matrix outuput) {
-        output = outuput;
-    }
+	public Matrix getInput(final int index) {
+		return inputs.get(index);
+	}
 
-    public void setWeight(final Matrix weight) {
-        this.weight = weight;
-    }
+	public Matrix getOutput(final int index) {
+		return outputs.get(index);
+	}
 
-    private double sigmoid(final double z) {
-        return 1d / (1d + Math.pow(Math.E, -z));
-    }
+	public Matrix getWeight() {
+		return weight;
+	}
 
-    private double sigmoidDerivative(final double z) {
-        final double sig = sigmoid(z);
-        // Essa eh a expressao algebrica da derivada da funcao sigmoid.
-        return sig * (1 - sig);
-    }
+	public Layer inputing(final Layer nextLayer) {
+		nextLayer.addInput(input);
+		return nextLayer;
+	}
 
-    public Matrix subtractBiasError(final Matrix error) {
-        biases = biases.sub(error);
-        return biases;
-    }
+	public int normalize(final double output) {
+		return output > 0 ? 1 : -1;
+	}
 
-    public Matrix subtractWeightError(final Matrix error) {
-        weight = weight.sub(error);
-        return weight;
-    }
+	public void setBiases(final Matrix biases) {
+		this.biases = biases;
+	}
 
-    public Matrix weightedError() {
-        return weight.multiply(error);
-    }
+	public void setErrors(final List<Matrix> errors) {
+		this.errors = errors;
+	}
 
-    public Matrix weighting(final Matrix input) {
-        return weight.transpose().multiply(input).sum(biases);
-    }
+	void setInput(final Matrix input) {
+		this.input = input;
+	}
 
+	public void setWeight(final Matrix weight) {
+		this.weight = weight;
+	}
+
+	public Matrix subtractBiasError(final Matrix error) {
+		biases = biases.sub(error);
+		return biases;
+	}
+
+	public Matrix subtractWeightError(final Matrix error) {
+		weight = weight.sub(error);
+		return weight;
+	}
+
+	public Matrix weightedError() {
+		return weight.multiply(error);
+	}
 }

@@ -18,13 +18,13 @@ public class DigitClassifier {
         HIDDEN_LAYER_SIZE = 15;
         OUTPUT_LAYER_SIZE = Digit.DIGITS_SIZE_SET;
     }
-    private final int batchLength = 1;
-
     private TrainingDigit[][] batchs;
 
-    private final Layer hiddenLayer = new Layer();
-    private final Layer inLayer = new Layer();
-    private final Layer outLayer = new Layer();
+    private final int batchSize = 3;
+
+    private final Layer hiddenLayer = new Layer(input -> input.apply(this::sigmoid));
+    private final Layer inLayer = new Layer(input -> input);
+    private final Layer outLayer = new Layer(input -> input.apply(this::sigmoid));
 
     public DigitClassifier() {
         initLayers();
@@ -35,29 +35,42 @@ public class DigitClassifier {
         initWeights();
     }
 
-    private void backPropagation(final Column expectedVal) {
-        final Matrix z2 = hiddenLayer.weighting(inLayer.getOutput());
-        final Matrix z3 = outLayer.activate(z2);
+    private Matrix activationDerivative(final Matrix matrix) {
+        return matrix.apply(z -> {
+            final double sig = sigmoid(z);
+            // Essa eh a expressao algebrica da derivada da funcao sigmoid.
+            return sig * 1 - sig;
+        });
 
-        final Matrix input = hiddenLayer.getInput();
-        final Matrix actDerivative = outLayer.activateDerivative(input);
+    }
 
-        final Matrix activation = outLayer.getInput();
+    private void backPropagate(final Column expectedVal) {
+        Matrix input = outLayer.activate();
+        Matrix derivative = activationDerivative(input);
 
-        final Matrix gradC = activation.sub(expectedVal);
-        Matrix error = gradC.dot(actDerivative);
+        final Matrix outputVal = output();
 
-        outLayer.addError(error);
+        final Matrix gradient = outputVal.sub(expectedVal);
+        final Matrix outError = gradient.dot(derivative);
+        outLayer.addError(outError);
 
-        error = outLayer.weightedError().dot(hiddenLayer.activateDerivative());
-        hiddenLayer.addError(error);
+        input = hiddenLayer.activate();
+        derivative = activationDerivative(input);
+        final Matrix outWeight = outLayer.getWeight();
+        final Matrix hiddenError = outWeight.multiply(outError).dot(derivative);
+        hiddenLayer.addError(hiddenError);
     }
 
     public int classify(final Digit digit) {
         initInputs(digit);
         feedForward();
-
-        return output(outLayer.getInput());
+        final Column out = output();
+        for (int i = 0; i < out.getRowNum(); i++) {
+            if (out.get(i) == 1d) {
+                return i;
+            }
+        }
+        throw new IllegalStateException(String.format("Fail in classify the digit %d", digit.getValue()));
     }
 
     private void clearLayers() {
@@ -67,28 +80,20 @@ public class DigitClassifier {
     }
 
     private void feedForward() {
-        outLayer.activate(hiddenLayer.activate(inLayer.getOutput()));
+        inLayer.inputing(hiddenLayer).activate(outLayer);
     }
 
     private void initBatchs(final List<TrainingDigit> data) {
-        int batchNum = batchLength;
-        final int rest = data.size() % batchLength;
-        int size = (data.size() - rest) / batchLength;
-        if (size == 0) {
-            batchNum = 1;
-            size = data.size();
-        }
+        final int batchNum = data.size() / batchSize;
+        batchs = new TrainingDigit[batchNum][batchSize];
 
-        batchs = new TrainingDigit[batchNum][size];
-        int begin = 0;
-        int end = 0;
-
+        int j = 0;
         for (int b = 0; b < batchNum; b++) {
-            begin = b * size;
-            end = begin + size;
-
-            for (int i = begin; i < end; i++) {
-                batchs[b][i] = data.get(i);
+            for (int i = 0; i < batchSize; i++) {
+                batchs[b][i] = data.get(j);
+                if (++j >= data.size()) {
+                    return;
+                }
             }
         }
 
@@ -100,14 +105,15 @@ public class DigitClassifier {
     }
 
     private void initInputs(final Digit digit) {
-        final Matrix out = inLayer.getOutput();
+        final double[] pixels = new double[Digit.PIXELS_PER_DIGIT];
         for (int i = 0; i < Digit.PIXELS_PER_DIGIT; i++) {
-            out.set(i, 0, digit.getPixel(i));
+            pixels[i] = digit.getInputValue(i);
         }
+        inLayer.addInput(new Column(pixels));
     }
 
     private void initLayers() {
-        inLayer.setOutput(new Column(INPUT_LAYER_SIZE));
+        inLayer.addInput(new Column(INPUT_LAYER_SIZE));
 
         hiddenLayer.setBiases(new Column(HIDDEN_LAYER_SIZE));
         hiddenLayer.setWeight(new Matrix(INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZE));
@@ -122,21 +128,25 @@ public class DigitClassifier {
     }
 
     private void learn() {
-        TrainingDigit data = null;
+        TrainingDigit digit = null;
         for (int i = 0; i < batchs.length; i++) {
             for (int j = 0; j < batchs[i].length; j++) {
-                data = batchs[i][j];
+                digit = batchs[i][j];
 
-                initInputs(data);
+                initInputs(digit);
                 feedForward();
-                backPropagation(new Column(data.getExpectedOutput()));
+                backPropagate(new Column(digit.getExpectedOutput()));
+
             }
             updateWeights();
             clearLayers();
         }
     }
 
-    private int output(final Matrix activation) {
+    private Column output() {
+        final Matrix activation = outLayer.activate();
+        final double[] out = new double[activation.getRowNum()];
+
         int max = 0;
         final int last = activation.getRowNum() - 1;
         for (int i = 0; i < last; i++) {
@@ -144,11 +154,17 @@ public class DigitClassifier {
                 max = i + 1;
             }
         }
-        return max;
+
+        out[max] = 1;
+        return new Column(out);
     }
 
     private void shuffleData(final List<TrainingDigit> data) {
         Collections.shuffle(data);
+    }
+
+    private double sigmoid(final double z) {
+        return 1d / (1d + Math.exp(-z));
     }
 
     public void training(final List<TrainingDigit> data) {
@@ -169,7 +185,7 @@ public class DigitClassifier {
         Matrix error = null;
         for (int i = 0; i < tot; i++) {
             error = outLayer.getError(i);
-            output = hiddenLayer.getOutput(i);
+            output = hiddenLayer.activate(i);
             if (outWeightError == null || outBiasError == null) {
                 outBiasError = error;
                 outWeightError = output.multiply(error.transpose());
@@ -184,7 +200,7 @@ public class DigitClassifier {
         tot = hiddenLayer.getErrors().size();
         for (int i = 0; i < tot; i++) {
             error = hiddenLayer.getError(i);
-            output = inLayer.getOutput(i);
+            output = inLayer.getInput(i);
             if (hiddenWeightError == null || hiddenBiasError == null) {
                 hiddenBiasError = error;
                 hiddenWeightError = output.multiply(error.transpose());
@@ -195,11 +211,11 @@ public class DigitClassifier {
             }
         }
 
-        outWeightError = outWeightError.apply(e -> e * ERROR_RATE / batchLength);
-        outBiasError = outBiasError.apply(e -> e * ERROR_RATE / batchLength);
+        outWeightError = outWeightError.apply(e -> e * ERROR_RATE / batchSize);
+        outBiasError = outBiasError.apply(e -> e * ERROR_RATE / batchSize);
 
-        hiddenWeightError = hiddenWeightError.apply(e -> e * ERROR_RATE / batchLength);
-        hiddenBiasError = hiddenBiasError.apply(e -> e * ERROR_RATE / batchLength);
+        hiddenWeightError = hiddenWeightError.apply(e -> e * ERROR_RATE / batchSize);
+        hiddenBiasError = hiddenBiasError.apply(e -> e * ERROR_RATE / batchSize);
 
         outLayer.subtractWeightError(outWeightError);
         outLayer.subtractBiasError(outBiasError);

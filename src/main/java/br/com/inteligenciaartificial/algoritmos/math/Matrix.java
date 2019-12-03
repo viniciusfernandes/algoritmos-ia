@@ -103,7 +103,6 @@ public class Matrix {
             }
         }
         return this;
-
     }
 
     public boolean test(final DoublePredicate validation) {
