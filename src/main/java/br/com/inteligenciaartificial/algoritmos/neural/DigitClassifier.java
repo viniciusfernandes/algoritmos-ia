@@ -39,7 +39,7 @@ public class DigitClassifier {
         return matrix.apply(z -> {
             final double sig = sigmoid(z);
             // Essa eh a expressao algebrica da derivada da funcao sigmoid.
-            return sig * 1 - sig;
+            return sig * (1 - sig);
         });
 
     }
