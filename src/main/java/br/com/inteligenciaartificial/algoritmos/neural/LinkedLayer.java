@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
-public class Layer {
+public class LinkedLayer {
     private final UnaryOperator<Matrix> activation;
 
     private Matrix biases;
@@ -16,16 +17,19 @@ public class Layer {
 
     private Matrix input;
     private final List<Matrix> inputs = new ArrayList<>();
-    private final List<Matrix> outputs = new ArrayList<>();
 
+    private LinkedLayer next;
+    private LinkedLayer previous;
     private Matrix weight;
+    private int neuronNumber;
 
-    public Layer() {
+    public LinkedLayer() {
         activation = null;
     }
 
-    public Layer(final UnaryOperator<Matrix> activation) {
+    public LinkedLayer(final int neuronNumber, final UnaryOperator<Matrix> activation) {
         this.activation = activation;
+        this.neuronNumber = neuronNumber;
     }
 
     public Matrix activate() {
@@ -36,7 +40,7 @@ public class Layer {
         return activation.apply(estimulate(getInput(indexInput)));
     }
 
-    public Layer activate(final Layer nextLayer) {
+    public LinkedLayer activate(final LinkedLayer nextLayer) {
         nextLayer.addInput(activation.apply(estimulate(input)));
         return nextLayer;
     }
@@ -51,14 +55,13 @@ public class Layer {
         inputs.add(input);
     }
 
-    public Layer backPropagate(final Layer previousLayer) {
+    public LinkedLayer backPropagate(final LinkedLayer previousLayer) {
         return previousLayer;
     }
 
     public void clear() {
         errors.clear();
         inputs.clear();
-        outputs.clear();
         input = null;
         error = null;
     }
@@ -67,7 +70,7 @@ public class Layer {
         return weight.transpose().multiply(input).sub(biases);
     }
 
-    public Layer estimulating(final Layer nextLayer) {
+    public LinkedLayer estimulating(final LinkedLayer nextLayer) {
         nextLayer.addInput(estimulate(input));
         return nextLayer;
     }
@@ -92,15 +95,19 @@ public class Layer {
         return inputs.get(index);
     }
 
-    public Matrix getOutput(final int index) {
-        return outputs.get(index);
+    public LinkedLayer getNext() {
+        return next;
+    }
+
+    public LinkedLayer getPrevious() {
+        return previous;
     }
 
     public Matrix getWeight() {
         return weight;
     }
 
-    public Layer inputing(final Layer nextLayer) {
+    public LinkedLayer inputing(final LinkedLayer nextLayer) {
         nextLayer.addInput(input);
         return nextLayer;
     }
@@ -121,8 +128,12 @@ public class Layer {
         this.input = input;
     }
 
-    public void setWeight(final Matrix weight) {
-        this.weight = weight;
+    public LinkedLayer next(final LinkedLayer next) {
+        this.next = next;
+        this.next.previous = this;
+        next.weight = new Matrix(neuronNumber, next.neuronNumber).initRandom();
+        next.biases = new Column(next.neuronNumber).initRandom();
+        return next;
     }
 
     public Matrix subtractBiasError(final Matrix error) {
