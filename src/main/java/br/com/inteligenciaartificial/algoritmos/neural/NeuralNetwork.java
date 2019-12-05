@@ -7,158 +7,183 @@ import java.util.function.DoubleUnaryOperator;
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
-public class NeuralNetwork<K, M> {
+public class NeuralNetwork {
 
-    private final DoubleUnaryOperator activationDerivaticeFunction;
-    private final DoubleUnaryOperator activationFunction;
-    private TrainingData[][] batchs;
+	private final DoubleUnaryOperator activationDerivaticeFunction;
+	private final DoubleUnaryOperator activationFunction;
+	private TrainingData[][] batchs;
+	private final int batchSize = 1;
 
-    private final int batchSize = 1;
+	private final OutputLinkedLayer lastLayer;
 
-    private final LinkedLayer linkedLayer;
-    private final LinkedLayer lastLayer;
+	private final LinkedLayer linkedLayer;
 
-    public NeuralNetwork(
-                    final DoubleUnaryOperator activationFunction, final DoubleUnaryOperator activationDerivaticeFunction,
-                    final int... numberOfneuros) {
-        this.activationFunction = activationFunction;
-        this.activationDerivaticeFunction = activationDerivaticeFunction;
+	public NeuralNetwork(final DoubleUnaryOperator activationFunction,
+			final DoubleUnaryOperator activationDerivaticeFunction, final int... numberOfneuros) {
+		this.activationFunction = activationFunction;
+		this.activationDerivaticeFunction = activationDerivaticeFunction;
 
-        if (numberOfneuros.length <= 2) {
-            throw new IllegalArgumentException("All networks must have 2 layers at least.");
-        }
+		if (numberOfneuros.length <= 2) {
+			throw new IllegalArgumentException("All networks must have 2 layers at least.");
+		}
 
-        linkedLayer = new LinkedLayer(numberOfneuros[0], m -> m.apply(activationFunction));
-        LinkedLayer layer = linkedLayer;
-        for (int i = 1; i < numberOfneuros.length; i++) {
-            layer = layer.next(new LinkedLayer(numberOfneuros[i], m -> m.apply(activationFunction)));
-        }
-        lastLayer = layer;
-    }
+		linkedLayer = new LinkedLayer(numberOfneuros[0], m -> m.apply(activationFunction));
+		LinkedLayer layer = linkedLayer;
+		final int lastIdx = numberOfneuros.length - 1;
+		for (int i = 1; i < numberOfneuros.length; i++) {
+			if (i == lastIdx) {
+				layer = layer.next(new OutputLinkedLayer(numberOfneuros[i], m -> m.apply(activationFunction)), );
+				} else {
+				layer = layer.next(new LinkedLayer(numberOfneuros[i], m -> m.apply(activationFunction)));
+			}
+		}
+		lastLayer = layer;
+	}
 
-    private void initBatchs(final List<TrainingData> data) {
-        final int batchNum = data.size() / batchSize;
-        batchs = new TrainingData[batchNum][batchSize];
+	private void backPropagate(final Column expectedVal) {
+lastLayer.set
+	}
 
-        int j = 0;
-        for (int b = 0; b < batchNum; b++) {
-            for (int i = 0; i < batchSize; i++) {
-                batchs[b][i] = data.get(j);
-                if (++j >= data.size()) {
-                    return;
-                }
-            }
-        }
+	private void feedForward(final LinkedLayer layer) {
+		if (layer == null) {
+			return;
+		}
+		feedForward(layer.activate(layer.getNext()));
+	}
 
-    }
+	private void initBatchs(final List<TrainingData> data) {
+		final int batchNum = data.size() / batchSize;
+		batchs = new TrainingData[batchNum][batchSize];
 
-    private void initInputs(final TrainingData data) {
-        final double[] col = new double[data.size()];
-        for (int i = 0; i < data.size(); i++) {
-            col[i] = data.getInput(i);
-        }
-        linkedLayer.setInput(new Column(col));
-    }
+		int j = 0;
+		for (int b = 0; b < batchNum; b++) {
+			for (int i = 0; i < batchSize; i++) {
+				batchs[b][i] = data.get(j);
+				if (++j >= data.size()) {
+					return;
+				}
+			}
+		}
 
-    private void feedForward(final LinkedLayer layer) {
-        if (layer == null) {
-            return;
-        }
-        feedForward(layer.activate(layer.getNext()));
-    }
+	}
 
-    private void learn() {
-        TrainingData data = null;
-        for (int i = 0; i < batchs.length; i++) {
-            for (int j = 0; j < batchs[i].length; j++) {
-                data = batchs[i][j];
+	private void initInputs(final TrainingData data) {
+		final double[] col = new double[data.size()];
+		for (int i = 0; i < data.size(); i++) {
+			col[i] = data.getInput(i);
+		}
+		linkedLayer.setInput(new Column(col));
+	}
 
-                initInputs(data);
-                feedForward(linkedLayer);
-                backPropagate(new Column(data.getExpectedValue()));
+	private void learn() {
+		TrainingData data = null;
+		for (int i = 0; i < batchs.length; i++) {
+			for (int j = 0; j < batchs[i].length; j++) {
+				data = batchs[i][j];
 
-            }
-            updateWeights();
-            clearLayers();
-        }
-    }
+				initInputs(data);
+				feedForward(linkedLayer);
+				backPropagate(new Column(data.getExpectedValue()));
 
-    private void updateWeights() {
-        Matrix output = null;
-        Matrix outWeightError = null;
-        Matrix outBiasError = null;
+			}
+			updateWeights();
+			// clearLayers();
+		}
+	}
 
-        Matrix hiddenWeightError = null;
-        Matrix hiddenBiasError = null;
+	private Column output(final Matrix input) {
+		final double[] out = new double[input.getRowNum()];
 
-        int tot = outLayer.getErrors().size();
-        Matrix error = null;
-        for (int i = 0; i < tot; i++) {
-            error = outLayer.getError(i);
-            output = hiddenLayer.activate(i);
-            if (outWeightError == null || outBiasError == null) {
-                outBiasError = error;
-                outWeightError = output.multiply(error.transpose());
+		int max = 0;
+		final int last = input.getRowNum() - 1;
+		for (int i = 0; i < last; i++) {
+			if (input.get(max, 0) < input.get(i + 1, 0)) {
+				max = i + 1;
+			}
+		}
 
-            } else {
-                outBiasError = outBiasError.sum(error);
-                outWeightError = outWeightError.sum(output.multiply(error.transpose()));
-            }
+		out[max] = 1;
+		return new Column(out);
+	}
 
-        }
+	private Matrix outputLastLayerError(final Matrix input, final Column expectedVal) {
+		final Matrix derivative = input.apply(activationDerivaticeFunction);
 
-        tot = hiddenLayer.getErrors().size();
-        for (int i = 0; i < tot; i++) {
-            error = hiddenLayer.getError(i);
-            output = inLayer.getInput(i);
-            if (hiddenWeightError == null || hiddenBiasError == null) {
-                hiddenBiasError = error;
-                hiddenWeightError = output.multiply(error.transpose());
+		final Matrix outputVal = output(input);
 
-            } else {
-                hiddenBiasError = hiddenBiasError.sum(error);
-                hiddenWeightError = hiddenWeightError.sum(output.multiply(error.transpose()));
-            }
-        }
+		final Matrix gradient = outputVal.sub(expectedVal);
+		final Matrix outError = gradient.dot(derivative);
+		return outError;
+	}
 
-        outWeightError = outWeightError.apply(e -> e * ERROR_RATE);
-        outBiasError = outBiasError.apply(e -> e * ERROR_RATE);
+	private void propagateError(final LinkedLayer layer) {
+		final LinkedLayer prevLayer = layer.getPrevious();
+		if (prevLayer == null) {
+			return;
+		}
+		prevLayer.addError(layer.getError());
+		propagateError(prevLayer);
+	}
 
-        hiddenWeightError = hiddenWeightError.apply(e -> e * ERROR_RATE);
-        hiddenBiasError = hiddenBiasError.apply(e -> e * ERROR_RATE);
+	private void shuffleData(final List<TrainingData> data) {
+		Collections.shuffle(data);
+	}
 
-        outLayer.subtractWeightError(outWeightError);
-        outLayer.subtractBiasError(outBiasError);
+	public void training(final List<TrainingData> data) {
+		shuffleData(data);
+		initBatchs(data);
+		learn();
+	}
 
-        hiddenLayer.subtractWeightError(hiddenWeightError);
-        hiddenLayer.subtractBiasError(hiddenBiasError);
-    }
+	private void updateWeights() {
+		Matrix output = null;
+		Matrix outWeightError = null;
+		Matrix outBiasError = null;
 
-    private void backPropagate(final Column expectedVal) {
-        Matrix input = outLayer.activate();
-        Matrix derivative = activationDerivative(input);
+		Matrix hiddenWeightError = null;
+		Matrix hiddenBiasError = null;
 
-        final Matrix outputVal = output();
+		int tot = outLayer.getErrors().size();
+		Matrix error = null;
+		for (int i = 0; i < tot; i++) {
+			error = outLayer.getError(i);
+			output = hiddenLayer.activate(i);
+			if (outWeightError == null || outBiasError == null) {
+				outBiasError = error;
+				outWeightError = output.multiply(error.transpose());
 
-        final Matrix gradient = outputVal.sub(expectedVal);
-        final Matrix outError = gradient.dot(derivative);
-        outLayer.addError(outError);
+			} else {
+				outBiasError = outBiasError.sum(error);
+				outWeightError = outWeightError.sum(output.multiply(error.transpose()));
+			}
 
-        input = hiddenLayer.activate();
-        derivative = activationDerivative(input);
-        final Matrix outWeight = outLayer.getWeight();
-        final Matrix hiddenError = outWeight.multiply(outError).dot(derivative);
-        hiddenLayer.addError(hiddenError);
-    }
+		}
 
-    private void shuffleData(final List<TrainingData<K, M>> data) {
-        Collections.shuffle(data);
-    }
+		tot = hiddenLayer.getErrors().size();
+		for (int i = 0; i < tot; i++) {
+			error = hiddenLayer.getError(i);
+			output = inLayer.getInput(i);
+			if (hiddenWeightError == null || hiddenBiasError == null) {
+				hiddenBiasError = error;
+				hiddenWeightError = output.multiply(error.transpose());
 
-    public void training(final List<TrainingData<K, M>> data) {
-        shuffleData(data);
-        initBatchs(data);
-        learn();
-    }
+			} else {
+				hiddenBiasError = hiddenBiasError.sum(error);
+				hiddenWeightError = hiddenWeightError.sum(output.multiply(error.transpose()));
+			}
+		}
+
+		outWeightError = outWeightError.apply(e -> e * ERROR_RATE);
+		outBiasError = outBiasError.apply(e -> e * ERROR_RATE);
+
+		hiddenWeightError = hiddenWeightError.apply(e -> e * ERROR_RATE);
+		hiddenBiasError = hiddenBiasError.apply(e -> e * ERROR_RATE);
+
+		outLayer.subtractWeightError(outWeightError);
+		outLayer.subtractBiasError(outBiasError);
+
+		hiddenLayer.subtractWeightError(hiddenWeightError);
+		hiddenLayer.subtractBiasError(hiddenBiasError);
+	}
 
 }
