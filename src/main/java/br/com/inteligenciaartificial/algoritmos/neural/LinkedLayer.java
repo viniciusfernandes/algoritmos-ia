@@ -8,149 +8,159 @@ import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public class LinkedLayer {
-	private final UnaryOperator<Matrix> activationFunction;
-	private Matrix biases;
+    private final UnaryOperator<Matrix> activationFunction;
+    private Matrix biases;
 
-	private Matrix error;
+    private Matrix error;
 
-	private List<Matrix> errors = new ArrayList<>();
+    private List<Matrix> errors = new ArrayList<>();
 
-	private Matrix input;
-	private final List<Matrix> inputs = new ArrayList<>();
+    private Matrix input;
+    private final List<Matrix> inputs = new ArrayList<>();
 
-	private int neuronNumber;
-	private LinkedLayer next;
-	private LinkedLayer previous;
-	private Matrix weight;
+    private int neuronNumber;
+    private LinkedLayer next;
+    private LinkedLayer previous;
+    private Matrix weight;
 
-	public LinkedLayer() {
-		activationFunction = null;
-	}
+    public LinkedLayer() {
+        activationFunction = null;
+    }
 
-	public LinkedLayer(final int neuronNumber, final UnaryOperator<Matrix> activationFunction) {
-		this.activationFunction = activationFunction;
-		this.neuronNumber = neuronNumber;
-	}
+    public LinkedLayer(final int neuronNumber, final UnaryOperator<Matrix> activationFunction) {
+        this.activationFunction = activationFunction;
+        this.neuronNumber = neuronNumber;
+    }
 
-	public Matrix activate() {
-		return activationFunction.apply(estimulate(input));
-	}
+    public Matrix activate() {
+        return activationFunction.apply(estimulate(input));
+    }
 
-	public Matrix activate(final int indexInput) {
-		return activationFunction.apply(estimulate(getInput(indexInput)));
-	}
+    public void feedForward() {
+        feedForward(this);
+    }
 
-	public LinkedLayer activate(final LinkedLayer nextLayer) {
-		nextLayer.addInput(activationFunction.apply(estimulate(input)));
-		return nextLayer;
-	}
+    private void feedForward(final LinkedLayer layer) {
+        if (layer.next == null) {
+            return;
+        }
+        layer.next.addInput(activationFunction.apply(estimulate(layer.input)));
+        feedForward(layer.next);
+    }
 
-	public void addError(final Matrix error) {
-		errors.add(error);
-		this.error = error;
-	}
+    @Deprecated
+    public Matrix activate(final int indexInput) {
+        return activationFunction.apply(estimulate(getInput(indexInput)));
+    }
 
-	public void addInput(final Matrix input) {
-		setInput(input);
-		inputs.add(input);
-	}
+    @Deprecated
+    public LinkedLayer activate(final LinkedLayer nextLayer) {
+        nextLayer.addInput(activationFunction.apply(estimulate(input)));
+        return nextLayer;
+    }
 
-	public void clear() {
-		errors.clear();
-		inputs.clear();
-		input = null;
-		error = null;
-	}
+    public void addError(final Matrix error) {
+        errors.add(error);
+        this.error = error;
+    }
 
-	public Matrix estimulate(final Matrix input) {
-		return weight.transpose().multiply(input).sub(biases);
-	}
+    public void addInput(final Matrix input) {
+        this.input = input;
+        inputs.add(input);
+    }
 
-	public LinkedLayer estimulating(final LinkedLayer nextLayer) {
-		nextLayer.addInput(estimulate(input));
-		return nextLayer;
-	}
+    public void clear() {
+        errors.clear();
+        inputs.clear();
+        input = null;
+        error = null;
+    }
 
-	public Matrix getBiases() {
-		return biases;
-	}
+    public Matrix estimulate(final Matrix input) {
+        return weight.transpose().multiply(input).sub(biases);
+    }
 
-	public Matrix getError() {
-		return getError(0);
-	}
+    public LinkedLayer estimulating(final LinkedLayer nextLayer) {
+        nextLayer.addInput(estimulate(input));
+        return nextLayer;
+    }
 
-	public Matrix getError(final int index) {
-		return errors.get(index);
-	}
+    public Matrix getBiases() {
+        return biases;
+    }
 
-	public List<Matrix> getErrors() {
-		return errors;
-	}
+    public Matrix getError() {
+        return getError(0);
+    }
 
-	public Matrix getInput() {
-		return input;
-	}
+    public Matrix getError(final int index) {
+        return errors.get(index);
+    }
 
-	public Matrix getInput(final int index) {
-		return inputs.get(index);
-	}
+    public List<Matrix> getErrors() {
+        return errors;
+    }
 
-	public LinkedLayer getNext() {
-		return next;
-	}
+    public Matrix getInput() {
+        return input;
+    }
 
-	public LinkedLayer getPrevious() {
-		return previous;
-	}
+    public Matrix getInput(final int index) {
+        return inputs.get(index);
+    }
 
-	public Matrix getWeight() {
-		return weight;
-	}
+    public LinkedLayer getNext() {
+        return next;
+    }
 
-	public LinkedLayer inputing(final LinkedLayer nextLayer) {
-		nextLayer.addInput(input);
-		return nextLayer;
-	}
+    public LinkedLayer getPrevious() {
+        return previous;
+    }
 
-	public LinkedLayer next(final LinkedLayer next) {
-		this.next = next;
-		this.next.previous = this;
-		next.weight = new Matrix(neuronNumber, next.neuronNumber).initRandom();
-		next.biases = new Column(next.neuronNumber).initRandom();
-		return next;
-	}
+    public Matrix getWeight() {
+        return weight;
+    }
 
-	public int normalize(final double output) {
-		return output > 0 ? 1 : -1;
-	}
+    public LinkedLayer inputing(final LinkedLayer nextLayer) {
+        nextLayer.addInput(input);
+        return nextLayer;
+    }
 
-	public LinkedLayer propagateError(final LinkedLayer layer) {
-		return layer;
-	}
+    public LinkedLayer next(final LinkedLayer next) {
+        this.next = next;
+        this.next.previous = this;
+        next.weight = new Matrix(neuronNumber, next.neuronNumber).initRandom();
+        next.biases = new Column(next.neuronNumber).initRandom();
+        return next;
+    }
 
-	public void setBiases(final Matrix biases) {
-		this.biases = biases;
-	}
+    public int normalize(final double output) {
+        return output > 0 ? 1 : -1;
+    }
 
-	public void setErrors(final List<Matrix> errors) {
-		this.errors = errors;
-	}
+    public LinkedLayer propagateError(final LinkedLayer layer) {
+        return layer;
+    }
 
-	void setInput(final Matrix input) {
-		this.input = input;
-	}
+    public void setBiases(final Matrix biases) {
+        this.biases = biases;
+    }
 
-	public Matrix subtractBiasError(final Matrix error) {
-		biases = biases.sub(error);
-		return biases;
-	}
+    public void setErrors(final List<Matrix> errors) {
+        this.errors = errors;
+    }
 
-	public Matrix subtractWeightError(final Matrix error) {
-		weight = weight.sub(error);
-		return weight;
-	}
+    public Matrix subtractBiasError(final Matrix error) {
+        biases = biases.sub(error);
+        return biases;
+    }
 
-	public Matrix weightedError() {
-		return weight.multiply(error);
-	}
+    public Matrix subtractWeightError(final Matrix error) {
+        weight = weight.sub(error);
+        return weight;
+    }
+
+    public Matrix weightedError() {
+        return weight.multiply(error);
+    }
 }
