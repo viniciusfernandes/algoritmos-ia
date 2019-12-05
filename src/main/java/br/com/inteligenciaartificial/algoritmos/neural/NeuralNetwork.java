@@ -10,89 +10,89 @@ import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public abstract class NeuralNetwork {
 
-    private TrainingData[][] batchs;
-    private static final int BATCH_SIZE = 1;
+  private TrainingData[][] batchs;
+  private static final int BATCH_SIZE = 1;
 
-    private final OutputLinkedLayer lastLayer;
+  final OutputLinkedLayer lastLayer;
 
-    private final LinkedLayer linkedLayer;
+  final LinkedLayer linkedLayer;
 
-    public NeuralNetwork(
-                    final DoubleUnaryOperator activationFunction, final UnaryOperator<Matrix> outputFunction, final int... layersNumber) {
+  public NeuralNetwork(
+          final DoubleUnaryOperator activationFunction, final UnaryOperator<Matrix> outputFunction, final int... layersNumber) {
 
-        if (layersNumber.length <= 2) {
-            throw new IllegalArgumentException("All networks must have 2 layers at least.");
+    if (layersNumber.length <= 2) {
+      throw new IllegalArgumentException("All networks must have 2 layers at least.");
+    }
+
+    linkedLayer = new LinkedLayer(layersNumber[0], m -> m.apply(activationFunction));
+    LinkedLayer layer = linkedLayer;
+    final int lastIdx = layersNumber.length - 1;
+    lastLayer = new OutputLinkedLayer(layersNumber[lastIdx], m -> m.apply(activationFunction), outputFunction);
+
+    for (int i = 1; i < layersNumber.length; i++) {
+      if (i == lastIdx) {
+        layer.next(lastLayer);
+      } else {
+        layer = layer.next(new LinkedLayer(layersNumber[i], m -> m.apply(activationFunction)));
+      }
+    }
+  }
+
+  public abstract void backPropagate(final Column expectedVal);
+
+  private void feedForward() {
+    lastLayer.feedForward();
+  }
+
+  private void initBatchs(final List<TrainingData> data) {
+    final int batchNum = data.size() / BATCH_SIZE;
+    batchs = new TrainingData[batchNum][BATCH_SIZE];
+
+    int j = 0;
+    for (int b = 0; b < batchNum; b++) {
+      for (int i = 0; i < BATCH_SIZE; i++) {
+        batchs[b][i] = data.get(j);
+        if (++j >= data.size()) {
+          return;
         }
-
-        linkedLayer = new LinkedLayer(layersNumber[0], m -> m.apply(activationFunction));
-        LinkedLayer layer = linkedLayer;
-        final int lastIdx = layersNumber.length - 1;
-        lastLayer = new OutputLinkedLayer(layersNumber[lastIdx], m -> m.apply(activationFunction), outputFunction);
-
-        for (int i = 1; i < layersNumber.length; i++) {
-            if (i == lastIdx) {
-                layer.next(lastLayer);
-            } else {
-                layer = layer.next(new LinkedLayer(layersNumber[i], m -> m.apply(activationFunction)));
-            }
-        }
+      }
     }
 
-    public abstract void backPropagate(final Column expectedVal);
+  }
 
-    private void feedForward() {
-        lastLayer.feedForward();
+  private void initInputs(final TrainingData data) {
+    final double[] col = new double[data.size()];
+    for (int i = 0; i < data.size(); i++) {
+      col[i] = data.getInput(i);
     }
+    linkedLayer.addInput(new Column(col));
+  }
 
-    private void initBatchs(final List<TrainingData> data) {
-        final int batchNum = data.size() / BATCH_SIZE;
-        batchs = new TrainingData[batchNum][BATCH_SIZE];
+  private void learn() {
+    TrainingData data = null;
+    for (int i = 0; i < batchs.length; i++) {
+      for (int j = 0; j < batchs[i].length; j++) {
+        data = batchs[i][j];
 
-        int j = 0;
-        for (int b = 0; b < batchNum; b++) {
-            for (int i = 0; i < BATCH_SIZE; i++) {
-                batchs[b][i] = data.get(j);
-                if (++j >= data.size()) {
-                    return;
-                }
-            }
-        }
+        initInputs(data);
+        feedForward();
+        backPropagate(new Column(data.getExpectedValue()));
 
+      }
+      updateWeights();
     }
+  }
 
-    private void initInputs(final TrainingData data) {
-        final double[] col = new double[data.size()];
-        for (int i = 0; i < data.size(); i++) {
-            col[i] = data.getInput(i);
-        }
-        linkedLayer.addInput(new Column(col));
-    }
+  private void shuffleData(final List<TrainingData> data) {
+    Collections.shuffle(data);
+  }
 
-    private void learn() {
-        TrainingData data = null;
-        for (int i = 0; i < batchs.length; i++) {
-            for (int j = 0; j < batchs[i].length; j++) {
-                data = batchs[i][j];
+  public void training(final List<TrainingData> data) {
+    shuffleData(data);
+    initBatchs(data);
+    learn();
+  }
 
-                initInputs(data);
-                feedForward();
-                backPropagate(new Column(data.getExpectedValue()));
-
-            }
-            updateWeights();
-        }
-    }
-
-    private void shuffleData(final List<TrainingData> data) {
-        Collections.shuffle(data);
-    }
-
-    public void training(final List<TrainingData> data) {
-        shuffleData(data);
-        initBatchs(data);
-        learn();
-    }
-
-    public abstract void updateWeights();
+  public abstract void updateWeights();
 
 }
