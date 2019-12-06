@@ -6,12 +6,8 @@ import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public class OutputLinkedLayer extends LinkedLayer {
   private Matrix expectedValue;
-  private UnaryOperator<Matrix> outputFunction;
+  private final UnaryOperator<Matrix> outputFunction;
   private Matrix activation = null;
-
-  public OutputLinkedLayer() {
-
-  }
 
   public OutputLinkedLayer(final int neuronNumber, final UnaryOperator<Matrix> activation, final UnaryOperator<Matrix> outputFunction) {
     super(neuronNumber, activation);

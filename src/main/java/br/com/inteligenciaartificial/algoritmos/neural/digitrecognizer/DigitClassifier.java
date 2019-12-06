@@ -1,10 +1,11 @@
-package br.com.inteligenciaartificial.algoritmos.neural;
+package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
 
 import java.util.Collections;
 import java.util.List;
 
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
+import br.com.inteligenciaartificial.algoritmos.neural.Layer;
 
 public class DigitClassifier {
     // Neural network leanin rate

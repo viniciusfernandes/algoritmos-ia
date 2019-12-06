@@ -1,14 +1,17 @@
 package br.com.inteligenciaartificial.algoritmos.neural;
 
-public class NetworkFactory {
-	public static NeuralNetwork create(final ActivationType type) {
-		if (ActivationType.SIGMOID == type) {
-			return new NeuralNetwork(MathUtils::sigmoid, MathUtils::sigmoidDerivative);
-		}
-		return new NeuralNetwork(MathUtils::tanh, MathUtils::tanhDerivative);
-	}
+import java.util.function.UnaryOperator;
 
-	private NetworkFactory() {
-	}
+import br.com.inteligenciaartificial.algoritmos.math.Matrix;
+
+public class NetworkFactory {
+  public static NeuralNetwork create(final ActivationType type, final UnaryOperator<Matrix> outputFunction, final int... numerOfNeurons) {
+    if (ActivationType.SIGMOID_GRADIENT_DESCENDENT == type) {
+      return new SigmoidGradientDescentNetwork(outputFunction, numerOfNeurons);
+    }
+    return null;
+  }
+
+  private NetworkFactory() {}
 
 }

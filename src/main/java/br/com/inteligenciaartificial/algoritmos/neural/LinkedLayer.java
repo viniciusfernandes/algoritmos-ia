@@ -18,13 +18,13 @@ public class LinkedLayer {
   private Matrix input;
   private final List<Matrix> inputs = new ArrayList<>();
 
-  private int neuronNumber;
+  private final int neuronNumber;
   private LinkedLayer next;
   private LinkedLayer previous;
   private Matrix weight;
 
-  public LinkedLayer() {
-    activationFunction = null;
+  public LinkedLayer(final int neuronNumber) {
+    this(neuronNumber, m -> m);
   }
 
   public LinkedLayer(final int neuronNumber, final UnaryOperator<Matrix> activationFunction) {
@@ -35,6 +35,10 @@ public class LinkedLayer {
   public Matrix activate() {
     return activationFunction.apply(estimulate(input));
 
+  }
+
+  public Matrix activate(final int indexInput) {
+    return activationFunction.apply(estimulate(getInput(indexInput)));
   }
 
   public void feedForward() {

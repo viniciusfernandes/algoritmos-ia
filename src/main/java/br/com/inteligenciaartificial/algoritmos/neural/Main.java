@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer.DigitClassifier;
+import br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer.MnistDataReader;
+import br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer.TrainingDigit;
+
 public class Main {
     private static final String BAR = "--------------------------------------------";
 
     public static void main(final String[] args) throws IOException {
 
         final List<TrainingDigit> trainingData =
-                        new MnistDataReader().readData("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
+                        new MnistDataReader().readDigits("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
         int[] total = new int[10];
         for (final TrainingDigit data : trainingData) {
             total[data.getValue()]++;
@@ -37,7 +41,7 @@ public class Main {
         System.out.println(BAR);
 
         final List<TrainingDigit> testingData =
-                        new MnistDataReader().readData("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte");
+                        new MnistDataReader().readDigits("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte");
 
         int result = -1;
         int matches = 0;
