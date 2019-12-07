@@ -6,7 +6,6 @@ import java.util.List;
 
 import br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer.DigitClassifier;
 import br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer.MnistDataReader;
-import br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer.TrainingDigit;
 
 public class Main {
     private static final String BAR = "--------------------------------------------";

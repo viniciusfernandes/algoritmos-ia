@@ -16,17 +16,9 @@ public class NeuronLayer {
         RANDOM // only support random for the moment
     }
 
-    double[][] weights;
-
     public final Function<Double, Double> activationFunction, activationFunctionDerivative;
 
-    public NeuronLayer(int numberOfNeurons, int numberOfInputsPerNeuron) {
-        this(ActivationFunctionType.SIGMOID, InitialWeightType.RANDOM, numberOfNeurons, numberOfInputsPerNeuron);
-    }
-
-    public NeuronLayer(ActivationFunctionType activationFunctionType, int numberOfNeurons, int numberOfInputsPerNeuron) {
-        this(activationFunctionType, InitialWeightType.RANDOM, numberOfNeurons, numberOfInputsPerNeuron);
-    }
+    double[][] weights;
 
     public NeuronLayer(ActivationFunctionType activationFunctionType, InitialWeightType initialWeightType, int numberOfNeurons, int numberOfInputsPerNeuron) {
         weights = new double[numberOfInputsPerNeuron][numberOfNeurons];
@@ -46,6 +38,14 @@ public class NeuronLayer {
             activationFunction = NNMath::sigmoid;
             activationFunctionDerivative = NNMath::sigmoidDerivative;
         }
+    }
+
+    public NeuronLayer(ActivationFunctionType activationFunctionType, int numberOfNeurons, int numberOfInputsPerNeuron) {
+        this(activationFunctionType, InitialWeightType.RANDOM, numberOfNeurons, numberOfInputsPerNeuron);
+    }
+
+    public NeuronLayer(int numberOfNeurons, int numberOfInputsPerNeuron) {
+        this(ActivationFunctionType.SIGMOID, InitialWeightType.RANDOM, numberOfNeurons, numberOfInputsPerNeuron);
     }
 
     public void adjustWeights(double[][] adjustment) {

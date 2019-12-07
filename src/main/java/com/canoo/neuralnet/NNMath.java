@@ -5,20 +5,20 @@ package com.canoo.neuralnet;
  */
 public class NNMath {
 
-    public static double sigmoid(double x) {
-        return 1 / (1 + Math.exp(-x));
-    }
+    public static double[][] matrixAdd(double[][] a, double[][] b) {
+        if (a.length == 0 || b.length == 0 || a.length != b.length || a[0].length != b[0].length) {
+            throw new IllegalArgumentException("Cannot add unequal matrices");
+        }
 
-    public static double sigmoidDerivative(double x) {
-        return x * (1 - x);
-    }
+        double result[][] = new double[a.length][a[0].length];
 
-    public static double tanh(double x){
-        return Math.tanh(x);
-    }
+        for (int i = 0; i < a.length; ++i) {
+            for (int j = 0; j < a[i].length; ++j) {
+                result[i][j] = a[i][j] + b[i][j];
+            }
+        }
 
-    public static double tanhDerivative(double x){
-        return 1 - Math.tanh(x) * Math.tanh(x);
+        return result;
     }
 
     public static double[][] matrixMultiply(double[][] a, double[][] b) {
@@ -47,20 +47,6 @@ public class NNMath {
         return result;
     }
 
-    public static double[][] scalarMultiply(double[][] v1, double[][] v2) {
-        if (v1.length != v2.length) {
-            throw new IllegalArgumentException("Cannot multiply vectors of unequal length");
-        }
-        double result[][] = new double[v1.length][v1[0].length];
-        for (int i = 0; i < v1.length; ++i) {
-            for (int j = 0; j < v1[i].length; ++j) {
-                result[i][j] = v1[i][j] * v2[i][j];
-            }
-        }
-        return result;
-
-    }
-
     public static double[][] matrixSubtract(double[][] a, double[][] b) {
         if (a.length == 0 || b.length == 0 || a.length != b.length || a[0].length != b[0].length) {
             throw new IllegalArgumentException("Cannot subtract unequal matrices");
@@ -71,22 +57,6 @@ public class NNMath {
         for (int i = 0; i < a.length; ++i) {
             for (int j = 0; j < a[i].length; ++j) {
                 result[i][j] = a[i][j] - b[i][j];
-            }
-        }
-
-        return result;
-    }
-
-    public static double[][] matrixAdd(double[][] a, double[][] b) {
-        if (a.length == 0 || b.length == 0 || a.length != b.length || a[0].length != b[0].length) {
-            throw new IllegalArgumentException("Cannot add unequal matrices");
-        }
-
-        double result[][] = new double[a.length][a[0].length];
-
-        for (int i = 0; i < a.length; ++i) {
-            for (int j = 0; j < a[i].length; ++j) {
-                result[i][j] = a[i][j] + b[i][j];
             }
         }
 
@@ -113,5 +83,35 @@ public class NNMath {
             result[i] = input[i] / sum;
         }
         return result;
+    }
+
+    public static double[][] scalarMultiply(double[][] v1, double[][] v2) {
+        if (v1.length != v2.length) {
+            throw new IllegalArgumentException("Cannot multiply vectors of unequal length");
+        }
+        double result[][] = new double[v1.length][v1[0].length];
+        for (int i = 0; i < v1.length; ++i) {
+            for (int j = 0; j < v1[i].length; ++j) {
+                result[i][j] = v1[i][j] * v2[i][j];
+            }
+        }
+        return result;
+
+    }
+
+    public static double sigmoid(double x) {
+        return 1 / (1 + Math.exp(-x));
+    }
+
+    public static double sigmoidDerivative(double x) {
+        return x * (1 - x);
+    }
+
+    public static double tanh(double x){
+        return Math.tanh(x);
+    }
+
+    public static double tanhDerivative(double x){
+        return 1 - Math.tanh(x) * Math.tanh(x);
     }
 }

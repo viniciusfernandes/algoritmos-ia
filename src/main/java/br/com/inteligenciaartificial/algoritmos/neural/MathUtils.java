@@ -10,6 +10,10 @@ public class MathUtils {
     return sig * (1 - sig);
   }
 
+  public static double step(final double z) {
+    return z > 0 ? 1 : -1;
+  }
+
   public static double tanh(final double x) {
     return Math.tanh(x);
   }
@@ -17,10 +21,6 @@ public class MathUtils {
   public static double tanhDerivative(final double z) {
     final double tan = MathUtils.tanh(z);
     return 1 - tan * tan;
-  }
-
-  public static double step(final double z) {
-    return z > 0 ? 1 : -1;
   }
 
   private MathUtils() {}

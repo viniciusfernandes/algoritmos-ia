@@ -7,20 +7,6 @@ import java.util.function.Function;
  */
 public class MatrixUtil {
 
-    public static String matrixToString(double[][] matrix) {
-        String result = "[";
-        for (double[] aMatrix : matrix) {
-            result += "[";
-            for (double anAMatrix : aMatrix) {
-                result += anAMatrix + " ";
-            }
-            result += "]\n";
-        }
-        result += "]\n";
-
-        return result;
-    }
-
     public static double[][] apply(double[][] matrix, Function<Double, Double> fn) {
         if (matrix.length == 0 || matrix[0].length == 0) {
             throw new IllegalArgumentException("Invalid matrix");
@@ -33,6 +19,20 @@ public class MatrixUtil {
                 result[i][j] = fn.apply(matrix[i][j]);
             }
         }
+
+        return result;
+    }
+
+    public static String matrixToString(double[][] matrix) {
+        String result = "[";
+        for (double[] aMatrix : matrix) {
+            result += "[";
+            for (double anAMatrix : aMatrix) {
+                result += anAMatrix + " ";
+            }
+            result += "]\n";
+        }
+        result += "]\n";
 
         return result;
     }

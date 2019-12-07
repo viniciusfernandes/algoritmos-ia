@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.inteligenciaartificial.algoritmos.neural.TrainingDigit;
+
 public class MnistDataReader {
 
   public List<TrainingDigit> readData(final String dataFilePath, final String labelFilePath) throws IOException {

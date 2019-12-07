@@ -16,6 +16,10 @@ public class NeuralNetSimple {
         this.layer1 = layer1;
     }
 
+    public double[][] getOutput() {
+        return outputLayer1;
+    }
+
     /**
      * Forward propagation
      * <p>
@@ -25,6 +29,19 @@ public class NeuralNetSimple {
      */
     public void think(double[][] inputs) {
         outputLayer1 = apply(matrixMultiply(inputs, layer1.weights), layer1.activationFunction); // 4x4
+    }
+
+    @Override
+    public String toString() {
+        String result = "Layer 1\n";
+        result += layer1.toString();
+
+        if (outputLayer1 != null) {
+            result += "Layer 1 output\n";
+            result += MatrixUtil.matrixToString(outputLayer1);
+        }
+
+        return result;
     }
 
     public void train(double[][] inputs, double[][] outputs, int numberOfTrainingIterations) {
@@ -49,22 +66,5 @@ public class NeuralNetSimple {
                 System.out.println(" Training iteration " + i + " of " + numberOfTrainingIterations);
             }
         }
-    }
-
-    public double[][] getOutput() {
-        return outputLayer1;
-    }
-
-    @Override
-    public String toString() {
-        String result = "Layer 1\n";
-        result += layer1.toString();
-
-        if (outputLayer1 != null) {
-            result += "Layer 1 output\n";
-            result += MatrixUtil.matrixToString(outputLayer1);
-        }
-
-        return result;
     }
 }

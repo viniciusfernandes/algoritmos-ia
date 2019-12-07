@@ -11,6 +11,30 @@ import java.util.Random;
 
 public class LearnAdd {
 
+    private static class Tuple {
+        double a;
+        double b;
+
+
+        Tuple(double b, double a) {
+            this.b = b;
+            this.a = a;
+        }
+    }
+
+    private static List<Tuple> createTrainingSet(int trainingSetSize, int seed) {
+
+        Random random = new Random(seed);
+        List<Tuple> tuples = new ArrayList<>();
+
+        for (int i = 0; i < trainingSetSize; i++) {
+            double s1 = random.nextDouble()*0.5;
+            double s2 = random.nextDouble()*0.5;
+            tuples.add(new Tuple(s1, s2));
+        }
+        return tuples;
+    }
+
     /**
      * The goal of this neural net example is to learn the add function by examples
      * e.g.
@@ -61,19 +85,6 @@ public class LearnAdd {
         predict(new double[][]{{0.2, 0.2}}, net);
     }
 
-    private static List<Tuple> createTrainingSet(int trainingSetSize, int seed) {
-
-        Random random = new Random(seed);
-        List<Tuple> tuples = new ArrayList<>();
-
-        for (int i = 0; i < trainingSetSize; i++) {
-            double s1 = random.nextDouble()*0.5;
-            double s2 = random.nextDouble()*0.5;
-            tuples.add(new Tuple(s1, s2));
-        }
-        return tuples;
-    }
-
     public static void predict(double[][] testInput, NeuralNet net) {
         net.think(testInput);
 
@@ -82,16 +93,5 @@ public class LearnAdd {
                 + testInput[0][0] + " "
                 + testInput[0][1] + " "
                 + net.getOutput()[0][0] + ", expected -> " +   (testInput[0][0] + testInput[0][1])+ " ");
-    }
-
-    private static class Tuple {
-        double a;
-        double b;
-
-
-        Tuple(double b, double a) {
-            this.b = b;
-            this.a = a;
-        }
     }
 }

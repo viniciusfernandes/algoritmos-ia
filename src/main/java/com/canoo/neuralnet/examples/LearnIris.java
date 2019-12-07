@@ -17,6 +17,28 @@ import java.util.stream.Stream;
  */
 public class LearnIris {
 
+    private static class Plant {
+        double a;
+        double b;
+        double c;
+        int category;
+        double d;
+
+
+        public Plant(double a, double b, double c, double d, int category) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+            this.category = category;
+        }
+    }
+
+    private static String format(double x) {
+        return String.format("%.03f", x);
+
+    }
+
     /**
      * The goal of this neural net example is to learn the add function by examples
      * category.g.
@@ -86,21 +108,6 @@ public class LearnIris {
 
     }
 
-    private static List<Plant> readFile() throws URISyntaxException, IOException {
-        List<Plant> plants = new ArrayList<>();
-
-        try (Stream<String> stream = Files.lines(Paths.get(LearnIris.class.getResource("irisShuffle.txt").toURI()))) {
-            stream.forEach(l -> {
-                String[] parts = l.split(",");
-                Plant plant = new Plant(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]), Integer.parseInt(parts[4]));
-                plants.add(plant);
-            });
-
-        }
-
-        return plants;
-    }
-
     public static boolean predict(double[][] testInput, double expected, NeuralNet net, double errorMargin) {
         net.think(testInput);
 
@@ -118,25 +125,18 @@ public class LearnIris {
         return expectedValue - errorMargin < predictedValue && predictedValue < expectedValue + errorMargin;
     }
 
-    private static String format(double x) {
-        return String.format("%.03f", x);
+    private static List<Plant> readFile() throws URISyntaxException, IOException {
+        List<Plant> plants = new ArrayList<>();
 
-    }
+        try (Stream<String> stream = Files.lines(Paths.get(LearnIris.class.getResource("irisShuffle.txt").toURI()))) {
+            stream.forEach(l -> {
+                String[] parts = l.split(",");
+                Plant plant = new Plant(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]), Integer.parseInt(parts[4]));
+                plants.add(plant);
+            });
 
-    private static class Plant {
-        double a;
-        double b;
-        double c;
-        double d;
-        int category;
-
-
-        public Plant(double a, double b, double c, double d, int category) {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-            this.category = category;
         }
+
+        return plants;
     }
 }

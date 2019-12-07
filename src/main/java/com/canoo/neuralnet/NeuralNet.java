@@ -12,9 +12,9 @@ import static com.canoo.neuralnet.NNMath.*;
 public class NeuralNet {
 
     private final NeuronLayer layer1, layer2;
+    private final double learningRate;
     private double[][] outputLayer1;
     private double[][] outputLayer2;
-    private final double learningRate;
 
     public NeuralNet(NeuronLayer layer1, NeuronLayer layer2) {
         this(layer1, layer2, 0.1);
@@ -24,6 +24,10 @@ public class NeuralNet {
         this.layer1 = layer1;
         this.layer2 = layer2;
         this.learningRate = learningRate;
+    }
+
+    public double[][] getOutput() {
+        return outputLayer2;
     }
 
     /**
@@ -36,6 +40,26 @@ public class NeuralNet {
     public void think(double[][] inputs) {
         outputLayer1 = apply(matrixMultiply(inputs, layer1.weights), layer1.activationFunction); // 4x4
         outputLayer2 = apply(matrixMultiply(outputLayer1, layer2.weights), layer2.activationFunction); // 4x1
+    }
+
+    @Override
+    public String toString() {
+        String result = "Layer 1\n";
+        result += layer1.toString();
+        result += "Layer 2\n";
+        result += layer2.toString();
+
+        if (outputLayer1 != null) {
+            result += "Layer 1 output\n";
+            result += MatrixUtil.matrixToString(outputLayer1);
+        }
+
+        if (outputLayer2 != null) {
+            result += "Layer 2 output\n";
+            result += MatrixUtil.matrixToString(outputLayer2);
+        }
+
+        return result;
     }
 
     public void train(double[][] inputs, double[][] outputs, int numberOfTrainingIterations) {
@@ -81,29 +105,5 @@ public class NeuralNet {
             //System.out.println(this);
 
         }
-    }
-
-    public double[][] getOutput() {
-        return outputLayer2;
-    }
-
-    @Override
-    public String toString() {
-        String result = "Layer 1\n";
-        result += layer1.toString();
-        result += "Layer 2\n";
-        result += layer2.toString();
-
-        if (outputLayer1 != null) {
-            result += "Layer 1 output\n";
-            result += MatrixUtil.matrixToString(outputLayer1);
-        }
-
-        if (outputLayer2 != null) {
-            result += "Layer 2 output\n";
-            result += MatrixUtil.matrixToString(outputLayer2);
-        }
-
-        return result;
     }
 }

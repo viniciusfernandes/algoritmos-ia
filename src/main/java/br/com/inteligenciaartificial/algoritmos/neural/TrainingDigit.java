@@ -1,6 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
-
-import br.com.inteligenciaartificial.algoritmos.neural.TrainingData;
+package br.com.inteligenciaartificial.algoritmos.neural;
 
 public class TrainingDigit extends TrainingData {
   final int digit;
