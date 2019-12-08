@@ -16,7 +16,7 @@ public abstract class NeuralNetwork {
 	private TrainingData[][] batchs;
 
 	protected final LinkedLayer firstLayer;
-	protected final OutputLinkedLayer lastLayer;
+	protected final LinkedLayer lastLayer;
 	protected final UnaryOperator<Matrix> outputFunction;
 
 	public NeuralNetwork(final UnaryOperator<Matrix> activationFunction, final UnaryOperator<Matrix> outputFunction,
@@ -29,17 +29,13 @@ public abstract class NeuralNetwork {
 		firstLayer = new LinkedLayer(numberOfNeurons[0]);
 		LinkedLayer layer = firstLayer;
 
-		final int lastIdx = numberOfNeurons.length - 1;
-		lastLayer = new OutputLinkedLayer(numberOfNeurons[lastIdx], activationFunction);
-
 		for (int i = 1; i < numberOfNeurons.length; i++) {
-			if (i == lastIdx) {
-				layer.next(lastLayer);
-			} else {
-				layer = layer.next(new LinkedLayer(numberOfNeurons[i], activationFunction));
-			}
+			layer = layer.next(new LinkedLayer(numberOfNeurons[i], activationFunction));
+			layer.initRandomBiases();
+			layer.initRandomWeights();
 		}
 
+		lastLayer = layer;
 		this.outputFunction = outputFunction;
 	}
 

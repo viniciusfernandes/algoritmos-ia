@@ -16,12 +16,16 @@ public class LinkedLayer {
 	private List<Matrix> errors = new ArrayList<>();
 
 	private Matrix input;
-	private final List<Matrix> inputs = new ArrayList<>();
-	private final int neuronNumber;
 
+	private final List<Matrix> inputs = new ArrayList<>();
+
+	private int layerNumber = 1;
 	private LinkedLayer next;
+	private final int numberOfNeurons;
 	private Matrix output;
+
 	private LinkedLayer previous;
+
 	private Matrix weight;
 
 	public LinkedLayer(final int neuronNumber) {
@@ -30,7 +34,7 @@ public class LinkedLayer {
 
 	public LinkedLayer(final int neuronNumber, final UnaryOperator<Matrix> activationFunction) {
 		this.activationFunction = activationFunction;
-		this.neuronNumber = neuronNumber;
+		numberOfNeurons = neuronNumber;
 	}
 
 	public Matrix activate() {
@@ -68,6 +72,9 @@ public class LinkedLayer {
 	}
 
 	public Matrix estimulate(final Matrix input) {
+		if (weight == null || biases == null) {
+			return input;
+		}
 		return weight.transpose().multiply(input).sub(biases);
 	}
 
@@ -81,10 +88,10 @@ public class LinkedLayer {
 	}
 
 	private void feedForward(final LinkedLayer layer) {
-		if (layer.next == null) {
+		if (layer == null || layer.next == null) {
 			return;
 		}
-		layer.next.addInput(activate(layer.input));
+		layer.next.addInput(layer.activate());
 		feedForward(layer.next);
 	}
 
@@ -116,6 +123,10 @@ public class LinkedLayer {
 		return next;
 	}
 
+	public int getNumberOfNeurons() {
+		return numberOfNeurons;
+	}
+
 	public LinkedLayer getPrevious() {
 		return previous;
 	}
@@ -124,17 +135,26 @@ public class LinkedLayer {
 		return weight;
 	}
 
+	public Matrix initRandomBiases() {
+		biases = new Column(numberOfNeurons).initRandom();
+		return biases;
+	}
+
+	public Matrix initRandomWeights() {
+		weight = new Matrix(previous.numberOfNeurons, numberOfNeurons).initRandom();
+		return weight;
+	}
+
 	public LinkedLayer inputing(final LinkedLayer nextLayer) {
 		nextLayer.addInput(input);
 		return nextLayer;
 	}
 
-	public LinkedLayer next(final LinkedLayer next) {
-		this.next = next;
-		this.next.previous = this;
-		next.weight = new Matrix(neuronNumber, next.neuronNumber).initRandom();
-		next.biases = new Column(next.neuronNumber).initRandom();
-		return next;
+	public LinkedLayer next(final LinkedLayer nextLayer) {
+		next = nextLayer;
+		next.previous = this;
+		next.layerNumber = layerNumber + 1;
+		return nextLayer;
 	}
 
 	public LinkedLayer propagateError(final LinkedLayer layer) {
@@ -157,6 +177,11 @@ public class LinkedLayer {
 	public Matrix subtractWeightError(final Matrix error) {
 		weight = weight.sub(error);
 		return weight;
+	}
+
+	@Override
+	public String toString() {
+		return "LinkedLayer [layerNumber=" + layerNumber + ", numberOfNeurons=" + numberOfNeurons + "]";
 	}
 
 	public Matrix weightedError() {

@@ -1,6 +1,7 @@
 package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -34,13 +35,19 @@ public class DigitRecognizer {
 			return new Column(out);
 		};
 
-		network = NetworkFactory.create(ActivationType.SIGMOID_GRADIENT_DESCENDENT, outputFunction, 78 * 78, 15, 10);
+		network = NetworkFactory.create(ActivationType.SIGMOID_GRADIENT_DESCENDENT, outputFunction, 28 * 28, 15, 10);
 	}
 
 	public static void main(final String[] args) throws IOException {
 
-		final List<TrainingDigit> trainingData = new MnistDataReader().readData("data/train-images.idx3-ubyte",
+		final List<TrainingDigit> list = new MnistDataReader().readData("data/train-images.idx3-ubyte",
 				"data/train-labels.idx1-ubyte");
+
+		final List<TrainingDigit> trainingData = new ArrayList<TrainingDigit>();
+		for (int i = 0; i < 1000; i++) {
+			trainingData.add(list.get(i));
+		}
+
 		int[] total = new int[10];
 		for (final TrainingDigit data : trainingData) {
 			total[data.getDigit()]++;
