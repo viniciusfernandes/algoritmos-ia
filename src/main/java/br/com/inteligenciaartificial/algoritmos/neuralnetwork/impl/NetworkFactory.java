@@ -11,6 +11,8 @@ public class NetworkFactory {
 			final int... numerOfNeurons) {
 		if (ActivationType.SIGMOID_GRADIENT_DESCENDENT == type) {
 			return new SigmoidGradientDescentNetwork(outputFunction, numerOfNeurons);
+		} else if (ActivationType.HIPERBOLIC_GRADIENT_DESCENDENT == type) {
+			return new HiperbolicGradientDescentNetwork(outputFunction, numerOfNeurons);
 		}
 		return null;
 	}
