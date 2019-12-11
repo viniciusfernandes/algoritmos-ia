@@ -1,7 +1,6 @@
 package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -39,14 +38,8 @@ public class DigitRecognizer {
 	}
 
 	public static void main(final String[] args) throws IOException {
-
-		final List<TrainingDigit> list = new MnistDataReader().readData("data/train-images.idx3-ubyte",
+		final List<TrainingDigit> trainingData = new MnistDataReader().readData("data/train-images.idx3-ubyte",
 				"data/train-labels.idx1-ubyte");
-
-		final List<TrainingDigit> trainingData = new ArrayList<TrainingDigit>();
-		for (int i = 0; i < 5; i++) {
-			trainingData.add(list.get(i));
-		}
 
 		int[] total = new int[10];
 		for (final TrainingDigit data : trainingData) {

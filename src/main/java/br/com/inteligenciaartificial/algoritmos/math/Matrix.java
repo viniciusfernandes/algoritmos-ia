@@ -7,7 +7,6 @@ import java.util.function.DoubleUnaryOperator;
 public class Matrix {
 	private int colNum = -1;
 	private double[][] elements;
-
 	private int rowNum = -1;
 	private Matrix transpose = null;
 
@@ -178,6 +177,7 @@ public class Matrix {
 	}
 
 	public Matrix set(final int rowIndex, final int colIndex, final double value) {
+
 		elements[rowIndex][colIndex] = value;
 		transpose.elements[colIndex][rowIndex] = value;
 		return this;

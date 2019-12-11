@@ -9,7 +9,7 @@ import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public abstract class NeuralNetwork {
 
-	private static final int BATCH_SIZE = 10;
+	private static final int BATCH_SIZE = 1000;
 	// Neural network leanin rate
 	private static final double ERROR_RATE = 0.015;
 
@@ -53,6 +53,15 @@ public abstract class NeuralNetwork {
 		return outputFunction.apply(lastLayer.activate());
 	}
 
+	private void clearLayers() {
+		LinkedLayer layer = firstLayer;
+		do {
+			layer.clear();
+			layer = layer.getNext();
+		} while (layer != null);
+
+	}
+
 	private void feedForward() {
 		LinkedLayer layer = firstLayer;
 		LinkedLayer next = layer.getNext();
@@ -93,6 +102,7 @@ public abstract class NeuralNetwork {
 				propagateError(new Column(data.getExpectedValue()));
 			}
 			updateWeights();
+			clearLayers();
 		}
 	}
 
@@ -118,10 +128,9 @@ public abstract class NeuralNetwork {
 			output = null;
 
 			errors = layer.getErrors();
-			int idx = -1;
+			int idx = 0;
 			for (final Matrix error : errors) {
-				idx = errors.indexOf(error);
-				output = previous.activate(0);
+				output = previous.activate(idx);
 				if (weightError == null || biasError == null) {
 					biasError = error;
 					weightError = output.multiply(error.transpose());
@@ -141,6 +150,7 @@ public abstract class NeuralNetwork {
 			layer = previous;
 			previous = previous.getPrevious();
 
+			idx++;
 		} while (previous != null);
 
 	}
