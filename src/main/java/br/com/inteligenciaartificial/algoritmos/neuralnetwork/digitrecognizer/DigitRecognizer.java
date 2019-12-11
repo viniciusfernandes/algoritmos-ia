@@ -1,4 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
+package br.com.inteligenciaartificial.algoritmos.neuralnetwork.digitrecognizer;
 
 import java.io.IOException;
 import java.util.Date;
@@ -7,10 +7,9 @@ import java.util.function.UnaryOperator;
 
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
-import br.com.inteligenciaartificial.algoritmos.neural.ActivationType;
-import br.com.inteligenciaartificial.algoritmos.neural.NetworkFactory;
-import br.com.inteligenciaartificial.algoritmos.neural.NeuralNetwork;
-import br.com.inteligenciaartificial.algoritmos.neural.TrainingDigit;
+import br.com.inteligenciaartificial.algoritmos.neuralnetwork.ActivationType;
+import br.com.inteligenciaartificial.algoritmos.neuralnetwork.NetworkFactory;
+import br.com.inteligenciaartificial.algoritmos.neuralnetwork.NeuralNetwork;
 
 public class DigitRecognizer {
 

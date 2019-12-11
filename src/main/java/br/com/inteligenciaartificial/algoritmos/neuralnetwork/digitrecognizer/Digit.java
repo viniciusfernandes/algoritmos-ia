@@ -1,4 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
+package br.com.inteligenciaartificial.algoritmos.neuralnetwork.digitrecognizer;
 
 public class Digit {
 	public static final int DIGITS_SIZE_SET = 10;

@@ -1,4 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural;
+package br.com.inteligenciaartificial.algoritmos.neuralnetwork;
 
 public class Data {
 	private final double[] inputValues;

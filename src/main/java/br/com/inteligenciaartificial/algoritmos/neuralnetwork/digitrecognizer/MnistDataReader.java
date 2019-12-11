@@ -1,4 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural.digitrecognizer;
+package br.com.inteligenciaartificial.algoritmos.neuralnetwork.digitrecognizer;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import br.com.inteligenciaartificial.algoritmos.neural.TrainingDigit;
 
 public class MnistDataReader {
 

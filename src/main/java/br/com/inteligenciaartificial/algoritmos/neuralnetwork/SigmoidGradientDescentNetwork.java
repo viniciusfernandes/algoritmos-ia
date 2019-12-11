@@ -1,9 +1,10 @@
-package br.com.inteligenciaartificial.algoritmos.neural;
+package br.com.inteligenciaartificial.algoritmos.neuralnetwork;
 
 import java.util.function.UnaryOperator;
 
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
+import br.com.inteligenciaartificial.algoritmos.utils.MathUtils;
 
 public class SigmoidGradientDescentNetwork extends NeuralNetwork {
 

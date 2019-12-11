@@ -1,4 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural;
+package br.com.inteligenciaartificial.algoritmos.neuralnetwork;
 
 import java.util.ArrayList;
 import java.util.List;

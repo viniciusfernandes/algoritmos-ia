@@ -1,4 +1,4 @@
-package br.com.inteligenciaartificial.algoritmos.neural;
+package br.com.inteligenciaartificial.algoritmos.utils;
 
 public class MathUtils {
 	public static double sigmoid(final double z) {
