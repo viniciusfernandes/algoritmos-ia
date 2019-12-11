@@ -3,8 +3,9 @@ package br.com.inteligenciaartificial.algoritmos.math;
 public class Column extends Matrix {
 
 	public Column(final double[] elements) {
+		super(elements.length, 1);
 		for (int i = 0; i < elements.length; i++) {
-			addRow(new double[] { elements[i] });
+			super.set(i, 0, elements[i]);
 		}
 	}
 

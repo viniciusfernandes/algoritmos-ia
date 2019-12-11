@@ -13,11 +13,11 @@ public class LinkedLayer {
 
 	private Matrix error;
 
-	private List<Matrix> errors = new ArrayList<>();
+	private List<Matrix> errors = new ArrayList<>(60000);
 
 	private Matrix input;
 
-	private final List<Matrix> inputs = new ArrayList<>();
+	private final List<Matrix> inputs = new ArrayList<>(60000);
 
 	private int layerNumber = 1;
 	private LinkedLayer next;
@@ -83,18 +83,6 @@ public class LinkedLayer {
 		return nextLayer;
 	}
 
-	public void feedForward() {
-		feedForward(this);
-	}
-
-	private void feedForward(final LinkedLayer layer) {
-		if (layer == null || layer.next == null) {
-			return;
-		}
-		layer.next.addInput(layer.activate());
-		feedForward(layer.next);
-	}
-
 	public Matrix getBiases() {
 		return biases;
 	}
@@ -116,7 +104,14 @@ public class LinkedLayer {
 	}
 
 	public Matrix getInput(final int index) {
-		return inputs.get(index);
+		try {
+			return inputs.get(index);
+		} catch (final Exception e) {
+			System.err
+					.println("Falho no indice " + index + " pois contem apenas " + (inputs.size() - 1) + " elementos");
+			throw e;
+		}
+
 	}
 
 	public LinkedLayer getNext() {

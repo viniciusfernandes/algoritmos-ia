@@ -16,29 +16,30 @@ public class SigmoidGradientDescentNetwork extends NeuralNetwork {
 
 	@Override
 	public void propagateError(final Column expectedVal) {
-		final Matrix input = lastLayer.activate();
-		final Matrix derivative = input.apply(MathUtils::sigmoidDerivative);
+		Matrix input = lastLayer.activate();
+		Matrix derivative = input.apply(MathUtils::sigmoidDerivative);
 
 		final Matrix outputVal = outputFunction.apply(input);
 
 		final Matrix gradient = outputVal.sub(expectedVal);
 		final Matrix outError = gradient.dot(derivative);
+
 		lastLayer.addError(outError);
 
-		propagateError(lastLayer.getPrevious());
+		Matrix error = null;
+		Matrix outWeight = null;
+		LinkedLayer layer = lastLayer.getPrevious();
+		do {
+			input = layer.activate();
+			derivative = activationDerivativeFunction.apply(input);
+			error = layer.getNext().getError();
+			outWeight = layer.getNext().getWeight();
+			error = outWeight.multiply(error).dot(derivative);
+			layer.addError(error);
+
+			layer = layer.getPrevious();
+		} while (layer.getPrevious() != null);
+
 	}
 
-	private void propagateError(final LinkedLayer layer) {
-		if (layer.getPrevious() == null) {
-			return;
-		}
-		final Matrix input = layer.activate();
-		final Matrix derivative = activationDerivativeFunction.apply(input);
-		Matrix error = layer.getNext().getError();
-		final Matrix outWeight = layer.getNext().getWeight();
-		error = outWeight.multiply(error).dot(derivative);
-		layer.addError(error);
-
-		propagateError(layer.getPrevious());
-	}
 }

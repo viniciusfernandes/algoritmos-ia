@@ -9,15 +9,23 @@ import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public abstract class NeuralNetwork {
 
-	private static final int BATCH_SIZE = 1;
+	private static final int BATCH_SIZE = 10;
 	// Neural network leanin rate
 	private static final double ERROR_RATE = 0.015;
 
 	private TrainingData[][] batchs;
 
+	private Matrix biasError = null;
+	private List<Matrix> errors;
 	protected final LinkedLayer firstLayer;
+
 	protected final LinkedLayer lastLayer;
+
+	private Matrix output = null;
+
 	protected final UnaryOperator<Matrix> outputFunction;
+
+	private Matrix weightError = null;
 
 	public NeuralNetwork(final UnaryOperator<Matrix> activationFunction, final UnaryOperator<Matrix> outputFunction,
 			final int... numberOfNeurons) {
@@ -46,7 +54,13 @@ public abstract class NeuralNetwork {
 	}
 
 	private void feedForward() {
-		firstLayer.feedForward();
+		LinkedLayer layer = firstLayer;
+		LinkedLayer next = layer.getNext();
+		do {
+			next.addInput(layer.activate());
+			layer = next;
+			next = next.getNext();
+		} while (next != null);
 	}
 
 	private void initBatchs(final List<? extends TrainingData> data) {
@@ -95,39 +109,40 @@ public abstract class NeuralNetwork {
 	}
 
 	private void updateWeights() {
-		updateWeights(lastLayer);
-	}
 
-	private void updateWeights(final LinkedLayer layer) {
-		if (layer.getPrevious() == null) {
-			return;
-		}
-		Matrix output = null;
-		Matrix weightError = null;
-		Matrix biasError = null;
+		LinkedLayer layer = lastLayer;
+		LinkedLayer previous = lastLayer.getPrevious();
+		do {
+			weightError = null;
+			biasError = null;
+			output = null;
 
-		final List<Matrix> errors = layer.getErrors();
-		int idx = -1;
-		for (final Matrix error : errors) {
-			idx = errors.indexOf(error);
-			output = layer.getPrevious().activate(idx);
-			if (weightError == null || biasError == null) {
-				biasError = error;
-				weightError = output.multiply(error.transpose());
+			errors = layer.getErrors();
+			int idx = -1;
+			for (final Matrix error : errors) {
+				idx = errors.indexOf(error);
+				output = previous.activate(0);
+				if (weightError == null || biasError == null) {
+					biasError = error;
+					weightError = output.multiply(error.transpose());
 
-			} else {
-				biasError = biasError.sum(error);
-				weightError = weightError.sum(output.multiply(error.transpose()));
+				} else {
+					biasError = biasError.sum(error);
+					weightError = weightError.sum(output.multiply(error.transpose()));
+				}
 			}
-		}
 
-		weightError = weightError.apply(e -> e * ERROR_RATE);
-		biasError = biasError.apply(e -> e * ERROR_RATE);
+			weightError = weightError.apply(e -> e * ERROR_RATE);
+			biasError = biasError.apply(e -> e * ERROR_RATE);
 
-		layer.subtractWeightError(weightError);
-		layer.subtractBiasError(biasError);
+			layer.subtractWeightError(weightError);
+			layer.subtractBiasError(biasError);
 
-		updateWeights(layer.getPrevious());
+			layer = previous;
+			previous = previous.getPrevious();
+
+		} while (previous != null);
+
 	}
 
 }

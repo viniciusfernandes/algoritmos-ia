@@ -44,7 +44,7 @@ public class DigitRecognizer {
 				"data/train-labels.idx1-ubyte");
 
 		final List<TrainingDigit> trainingData = new ArrayList<TrainingDigit>();
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 5; i++) {
 			trainingData.add(list.get(i));
 		}
 
