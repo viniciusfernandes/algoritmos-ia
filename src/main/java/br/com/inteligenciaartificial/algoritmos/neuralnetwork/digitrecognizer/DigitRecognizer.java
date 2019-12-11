@@ -8,8 +8,8 @@ import java.util.function.UnaryOperator;
 import br.com.inteligenciaartificial.algoritmos.math.Column;
 import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 import br.com.inteligenciaartificial.algoritmos.neuralnetwork.ActivationType;
-import br.com.inteligenciaartificial.algoritmos.neuralnetwork.NetworkFactory;
 import br.com.inteligenciaartificial.algoritmos.neuralnetwork.NeuralNetwork;
+import br.com.inteligenciaartificial.algoritmos.neuralnetwork.impl.NetworkFactory;
 
 public class DigitRecognizer {
 
