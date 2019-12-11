@@ -35,6 +35,7 @@ public class DigitRecognizer {
 		};
 
 		network = NetworkFactory.create(ActivationType.SIGMOID_GRADIENT_DESCENDENT, outputFunction, 28 * 28, 15, 10);
+		network.batchSize(2).errorRate(0.015);
 	}
 
 	public static void main(final String[] args) throws IOException {

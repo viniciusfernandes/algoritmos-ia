@@ -9,13 +9,14 @@ import br.com.inteligenciaartificial.algoritmos.math.Matrix;
 
 public abstract class NeuralNetwork {
 
-	private static final int BATCH_SIZE = 1000;
-	// Neural network leanin rate
-	private static final double ERROR_RATE = 0.015;
-
 	private TrainingData[][] batchs;
+	private int batchSize = 1;
 
 	private Matrix biasError = null;
+
+	// Neural network leanin rate
+	private double errorRate = 0.01;
+
 	private List<Matrix> errors;
 	protected final LinkedLayer firstLayer;
 
@@ -53,13 +54,23 @@ public abstract class NeuralNetwork {
 		return outputFunction.apply(lastLayer.activate());
 	}
 
-	private void clearLayers() {
+	public NeuralNetwork batchSize(final int batchSize) {
+		this.batchSize = batchSize;
+		return this;
+	}
+
+	private void clearErrors() {
 		LinkedLayer layer = firstLayer;
 		do {
 			layer.clear();
 			layer = layer.getNext();
 		} while (layer != null);
 
+	}
+
+	public NeuralNetwork errorRate(final double errorRate) {
+		this.errorRate = errorRate;
+		return this;
 	}
 
 	private void feedForward() {
@@ -73,12 +84,12 @@ public abstract class NeuralNetwork {
 	}
 
 	private void initBatchs(final List<? extends TrainingData> data) {
-		final int batchNum = data.size() / BATCH_SIZE;
-		batchs = new TrainingData[batchNum][BATCH_SIZE];
+		final int batchNum = data.size() / batchSize;
+		batchs = new TrainingData[batchNum][batchSize];
 
 		int j = 0;
 		for (int b = 0; b < batchNum; b++) {
-			for (int i = 0; i < BATCH_SIZE; i++) {
+			for (int i = 0; i < batchSize; i++) {
 				batchs[b][i] = data.get(j);
 				if (++j >= data.size()) {
 					return;
@@ -102,7 +113,7 @@ public abstract class NeuralNetwork {
 				propagateError(new Column(data.getExpectedValue()));
 			}
 			updateWeights();
-			clearLayers();
+			clearErrors();
 		}
 	}
 
@@ -141,8 +152,8 @@ public abstract class NeuralNetwork {
 				}
 			}
 
-			weightError = weightError.apply(e -> e * ERROR_RATE);
-			biasError = biasError.apply(e -> e * ERROR_RATE);
+			weightError = weightError.apply(e -> e * errorRate);
+			biasError = biasError.apply(e -> e * errorRate);
 
 			layer.subtractWeightError(weightError);
 			layer.subtractBiasError(biasError);

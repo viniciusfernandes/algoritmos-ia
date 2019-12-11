@@ -70,7 +70,7 @@ public class Matrix {
 		final Matrix m = new Matrix(rowNum, colNum);
 		for (int r = 0; r < elements.length; r++) {
 			for (int c = 0; c < elements[r].length; c++) {
-				m.set(r, c, elements[r][c]);
+				m.set(r, c, operation.applyAsDouble(elements[r][c]));
 			}
 		}
 		return m;
