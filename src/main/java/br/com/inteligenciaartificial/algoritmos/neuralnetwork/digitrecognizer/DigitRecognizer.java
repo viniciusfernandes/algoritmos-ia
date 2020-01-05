@@ -38,8 +38,7 @@ public class DigitRecognizer {
 	}
 
 	public static void main(final String[] args) throws IOException {
-		final List<TrainingDigit> trainingData = new MnistDataReader().readData("data/train-images.idx3-ubyte",
-				"data/train-labels.idx1-ubyte");
+		final List<TrainingDigit> trainingData = new MnistDataReader().readData("data/train-images.idx3-ubyte", "data/train-labels.idx1-ubyte");
 
 		int[] total = new int[10];
 		for (final TrainingDigit data : trainingData) {
@@ -48,8 +47,7 @@ public class DigitRecognizer {
 		System.out.println(BAR);
 		System.out.println("Data report:");
 		for (int i = 0; i < total.length; i++) {
-			System.out.println(String.format("Digit %d has total %.2f %s", i,
-					DigitRecognizer.percent(total[i], trainingData.size()), "%"));
+			System.out.println(String.format("Digit %d has total %.2f %s", i, DigitRecognizer.percent(total[i], trainingData.size()), "%"));
 		}
 
 		System.out.println(BAR);
@@ -65,8 +63,7 @@ public class DigitRecognizer {
 		System.out.println(String.format("LEARNING IS COMPLETED in %.2f secs.", DigitRecognizer.seconds(init, end)));
 		System.out.println(BAR);
 
-		final List<TrainingDigit> testingData = new MnistDataReader().readData("data/t10k-images.idx3-ubyte",
-				"data/t10k-labels.idx1-ubyte");
+		final List<TrainingDigit> testingData = new MnistDataReader().readData("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte");
 
 		int result = -1;
 		int matches = 0;
@@ -80,15 +77,15 @@ public class DigitRecognizer {
 
 			if (result == data.getDigit()) {
 				matches++;
-			} else {
+			}
+			else {
 				unmatchs[data.getDigit()]++;
 			}
 		}
 		end = new Date();
 
 		System.out.println(BAR);
-		System.out.println(
-				String.format("CLASSIFICATION IS COMPLETED in %.2f secs.", DigitRecognizer.seconds(init, end)));
+		System.out.println(String.format("CLASSIFICATION IS COMPLETED in %.2f secs.", DigitRecognizer.seconds(init, end)));
 		System.out.println(BAR);
 
 		System.out.println(String.format("Total matching %d from %d. Result %.2f %s", matches, testingData.size(),
@@ -120,7 +117,7 @@ public class DigitRecognizer {
 	}
 
 	private static double seconds(final Date init, final Date end) {
-		return (end.getTime() - init.getTime()) / 1000;
+		return (end.getTime() - init.getTime()) / 1000d;
 	}
 
 }

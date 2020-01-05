@@ -1,6 +1,5 @@
 package br.com.inteligenciaartificial.algoritmos.math;
 
-import java.util.Arrays;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleUnaryOperator;
 
@@ -10,11 +9,10 @@ public class Matrix {
 	private int rowNum = -1;
 	private Matrix transpose = null;
 
-	public Matrix() {
+	private Matrix() {
 	}
 
-	@Deprecated
-	public Matrix(final double[]... rows) {
+	Matrix(final double[]... rows) {
 		rowNum = rows.length;
 		colNum = rows[0].length;
 		elements = new double[rowNum][];
@@ -54,7 +52,8 @@ public class Matrix {
 
 		if (row.length != colNum) {
 			throw new IllegalArgumentException("All rows must have the same length");
-		} else {
+		}
+		else {
 			rowNum++;
 			final double[][] copy = new double[rowNum][];
 			for (int r = 0; r < elements.length; r++) {
@@ -76,9 +75,14 @@ public class Matrix {
 		return m;
 	}
 
-	@Deprecated
 	public Matrix copy() {
-		return new Matrix(Arrays.copyOf(elements, elements.length));
+		final Matrix m = new Matrix(rowNum, colNum);
+		for (int r = 0; r < elements.length; r++) {
+			for (int c = 0; c < elements[r].length; c++) {
+				m.set(r, c, elements[r][c]);
+			}
+		}
+		return m;
 	}
 
 	public Matrix dot(final Matrix other) {
@@ -86,9 +90,9 @@ public class Matrix {
 			return null;
 		}
 		if (rowNum != other.rowNum || colNum != other.colNum) {
-			throw new IllegalArgumentException(String.format(
-					"You tried operate a matrix %s and another matrix %s, but both must have the same rom and column numbers",
-					order(), other.order()));
+			throw new IllegalArgumentException(
+					String.format("You tried operate a matrix %s and another matrix %s, but both must have the same rom and column numbers", order(),
+							other.order()));
 		}
 		final Matrix m = new Matrix(rowNum, colNum);
 		for (int r = 0; r < elements.length; r++) {
@@ -148,8 +152,7 @@ public class Matrix {
 
 	public Matrix multiply(final Matrix other) {
 		if (colNum != other.rowNum) {
-			throw new UnsupportedOperationException(
-					"Operation is not defined. Matriz: " + order() + " and Matrix: " + other.order());
+			throw new UnsupportedOperationException("Operation is not defined. Matriz: " + order() + " and Matrix: " + other.order());
 		}
 
 		final Matrix m = new Matrix(rowNum, other.colNum);
@@ -198,8 +201,8 @@ public class Matrix {
 		}
 
 		if (rowNum != other.rowNum || colNum != other.colNum) {
-			throw new UnsupportedOperationException(String.format(
-					"Sum operation is no defined between matrix %s and another matrix %s", order(), other.order()));
+			throw new UnsupportedOperationException(
+					String.format("Sum operation is no defined between matrix %s and another matrix %s", order(), other.order()));
 		}
 
 		final Matrix m = new Matrix(rowNum, colNum);
